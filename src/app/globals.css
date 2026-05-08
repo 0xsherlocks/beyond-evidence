@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Sora", sans-serif;
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+  --color-surface: #f8fafc;
+  --color-accent: #B08D57;
+  --color-cta: #0B192C;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: var(--font-display);
+  }
+
+  .eyebrow {
+    @apply uppercase tracking-[0.25em] text-[10px] font-bold text-accent;
+  }
+
+  .pill-button {
+    @apply rounded-full uppercase tracking-widest text-[11px] font-bold px-8 py-4 transition-all duration-500 transform hover:scale-[1.05] active:scale-95 text-center;
+  }
+
+  .card-panel {
+    @apply bg-white border border-slate-100 shadow-sm rounded-[2rem] overflow-hidden hover:border-accent/40 hover:shadow-xl transition-all duration-500;
+  }
+}
