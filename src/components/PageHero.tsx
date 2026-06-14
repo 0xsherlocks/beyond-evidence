@@ -26,8 +26,7 @@ export default function PageHero({ title, eyebrow, description, imageUrl }: Page
   }
 
   return (
-    <div className="w-full pt-48 pb-24 px-6 md:px-12 flex flex-col items-center text-center bg-slate-50 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-100 to-transparent -z-10" />
+    <div className="w-full pt-48 pb-24 px-6 md:px-12 flex flex-col items-center text-center bg-transparent relative overflow-hidden">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

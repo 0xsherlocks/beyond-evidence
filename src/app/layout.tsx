@@ -4,6 +4,10 @@ import "./globals.css";
 import SiteHeader from "@/src/components/layout/SiteHeader";
 import Link from "next/link";
 import Logo from "@/src/components/Logo";
+import { getNavigation } from "@/src/sanity/queries";
+
+// Force dynamic rendering so navigation always reflects latest Sanity data
+export const dynamic = 'force-dynamic';
 
 const sora = Sora({
   subsets: ["latin"],
@@ -20,11 +24,37 @@ export const metadata: Metadata = {
   description: "A curated database for technical investigators, bridging theoretical research, field SOPs, and advanced laboratory methodology.",
 };
 
-export default function RootLayout({
+const DEFAULT_HEADER_LINKS = [
+  { label: 'Home', href: '/' },
+  { label: 'Topics', href: '/topics' },
+  { label: 'Research', href: '/research' },
+  { label: 'Quiz', href: '/quiz' },
+  { label: 'Contact', href: '/contact' },
+];
+
+const DEFAULT_FOOTER_LINKS = [
+  { label: 'About', href: '/about' },
+  { label: 'Contact', href: '/contact' },
+  { label: 'Legal', href: '/legal' },
+];
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let nav;
+  try {
+    nav = await getNavigation();
+  } catch (e) {
+    nav = null;
+  }
+
+  const HOME_LINK = { label: 'Home', href: '/' };
+  const rawHeaderLinks = nav?.headerLinks?.length > 0 ? nav.headerLinks : DEFAULT_HEADER_LINKS;
+  const headerLinks = rawHeaderLinks[0]?.href === '/' ? rawHeaderLinks : [HOME_LINK, ...rawHeaderLinks];
+  const footerLinks = nav?.footerLinks?.length > 0 ? nav.footerLinks : DEFAULT_FOOTER_LINKS;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -32,8 +62,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className={`${sora.variable} ${spaceGrotesk.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`} suppressHydrationWarning>
-        <SiteHeader />
+      <body className={`${sora.variable} ${spaceGrotesk.variable} antialiased min-h-screen flex flex-col bg-transparent text-foreground`} suppressHydrationWarning>
+        <SiteHeader headerLinks={headerLinks} />
         <main className="flex-1">
           {children}
         </main>
@@ -42,9 +72,9 @@ export default function RootLayout({
             <div className="flex flex-col gap-4 text-center md:text-left transition-all duration-300">
               <Logo showText={true} />
               <div className="flex items-center justify-center md:justify-start gap-8 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
-                <Link href="/about" className="hover:text-accent transition-colors">About</Link>
-                <Link href="/contact" className="hover:text-accent transition-colors">Contact</Link>
-                <Link href="/legal" className="hover:text-accent transition-colors">Legal</Link>
+                {footerLinks.map((link: any) => (
+                  <Link key={link.href} href={link.href} className="hover:text-accent transition-colors">{link.label}</Link>
+                ))}
               </div>
             </div>
             <div className="text-[10px] uppercase tracking-[0.3em] text-slate-600 font-bold">&copy; {new Date().getFullYear()} BEYOND EVIDENCE. ALL RIGHTS RESERVED.</div>

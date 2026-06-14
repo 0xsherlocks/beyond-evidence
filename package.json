@@ -1,5 +1,5 @@
 {
-  "name": "react-example",
+  "name": "beyond-evidence",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,19 +10,21 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@google/genai": "^1.29.0",
     "@sanity/client": "^7.22.0",
     "@sanity/image-url": "^2.1.1",
+    "@sanity/vision": "^5.24.0",
     "@tailwindcss/postcss": "^4.2.4",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "clsx": "^2.1.1",
-    "dotenv": "^17.2.3",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.546.0",
     "next": "^15.5.18",
+    "next-sanity": "^9.12.3",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
+    "sanity": "^5.24.0",
+    "styled-components": "^6.4.1",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
