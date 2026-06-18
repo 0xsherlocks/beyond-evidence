@@ -6,6 +6,14 @@ export const quizQuestion = defineType({
   type: 'document',
   fields: [
     defineField({
+      name: 'subject',
+      title: 'Subject',
+      type: 'reference',
+      to: [{ type: 'subject' }],
+      description: 'The subject this question belongs to.',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: 'question',
       title: 'Question',
       type: 'string',
@@ -26,6 +34,19 @@ export const quizQuestion = defineType({
       validation: (Rule) => Rule.required().min(0),
     }),
     defineField({
+      name: 'resourceFile',
+      title: 'Attached Resource (PDF/Image)',
+      type: 'file',
+      description: 'Optional: Attach an image, PDF, or document related to this question.',
+      options: { accept: '.pdf,.png,.jpg,.jpeg,.doc,.docx' },
+    }),
+    defineField({
+      name: 'resourceLink',
+      title: 'Reference Link',
+      type: 'url',
+      description: 'Optional: A link to reference material for this question.',
+    }),
+    defineField({
       name: 'order',
       title: 'Display Order',
       type: 'number',
@@ -42,6 +63,13 @@ export const quizQuestion = defineType({
   preview: {
     select: {
       title: 'question',
+      subtitle: 'subject.name',
+    },
+    prepare({ title, subtitle }) {
+      return {
+        title: title || 'Untitled Question',
+        subtitle: subtitle ? `Subject: ${subtitle}` : 'No subject assigned',
+      }
     },
   },
 })

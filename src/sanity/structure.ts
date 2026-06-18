@@ -1,7 +1,7 @@
 import type { StructureResolver } from 'sanity/structure'
 
 // Singletons are document types that should only have one instance
-const singletonTypes = new Set(['siteSettings', 'navigation', 'homePage', 'aboutPage', 'contactPage', 'legalPage', 'researchPage'])
+const singletonTypes = new Set(['siteSettings', 'navigation', 'homePage', 'aboutPage', 'contactPage', 'legalPage', 'researchPage', 'notificationPage'])
 
 // Defines the custom desk structure for the Sanity Studio
 export const structure: StructureResolver = (S) =>
@@ -47,10 +47,16 @@ export const structure: StructureResolver = (S) =>
         .id('legalPage')
         .child(S.document().schemaType('legalPage').documentId('legalPage')),
 
+      S.listItem()
+        .title('Notification Page & RSS')
+        .id('notificationPage')
+        .child(S.document().schemaType('notificationPage').documentId('notificationPage')),
+
       S.divider(),
 
       // Document collections
-      S.documentTypeListItem('topic').title('Topics'),
+      S.documentTypeListItem('studyMaterial').title('Study Materials / Exams'),
+      S.documentTypeListItem('subject').title('Subjects (Syllabus)'),
       S.documentTypeListItem('quizQuestion').title('Quiz Questions'),
-      S.documentTypeListItem('notification').title('Notifications'),
+      S.documentTypeListItem('dfssVacancy').title('DFSS Vacancies (Scraped)'),
     ])

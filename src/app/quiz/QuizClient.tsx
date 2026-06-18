@@ -3,26 +3,62 @@
 import { useState } from 'react';
 import PageHero from '@/src/components/PageHero';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, RotateCcw, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, RotateCcw, CheckCircle2, BookOpen, AlertCircle, Search, X } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
+interface SubjectItem {
+  _id: string;
+  name: string;
+  slug: string;
+  resolvedImage?: string;
+  questionCount: number;
+}
+
 interface QuizQuestion {
+  _id: string;
   question: string;
   options: string[];
   correctAnswer: number;
+  resourceFileUrl?: string;
+  resourceLink?: string;
 }
 
-export default function QuizClient({ questions }: { questions: QuizQuestion[] }) {
+export default function QuizClient({ subjects }: { subjects: SubjectItem[] }) {
+  const [selectedSubject, setSelectedSubject] = useState<SubjectItem | null>(null);
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const q = searchQuery.toLowerCase().trim();
+  const filtered = q
+    ? subjects.filter(s => s.name.toLowerCase().includes(q))
+    : subjects;
+
+  const startQuiz = async (subject: SubjectItem) => {
+    setSelectedSubject(subject);
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/quiz/${subject._id}`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        setQuestions(data);
+      } else {
+        setQuestions([]);
+      }
+    } catch (e) {
+      setQuestions([]);
+    }
+    setLoading(false);
+  };
 
   const handleNext = () => {
     if (selectedOption === questions[currentStep].correctAnswer) {
       setScore(s => s + 1);
     }
-
     if (currentStep < questions.length - 1) {
       setCurrentStep(c => c + 1);
       setSelectedOption(null);
@@ -38,15 +74,130 @@ export default function QuizClient({ questions }: { questions: QuizQuestion[] })
     setIsFinished(false);
   };
 
+  const goBack = () => {
+    setSelectedSubject(null);
+    setQuestions([]);
+    setCurrentStep(0);
+    setSelectedOption(null);
+    setScore(0);
+    setIsFinished(false);
+  };
+
+  // ─── Subject Selection Grid ────────────────────────────────
+  if (!selectedSubject) {
+    return (
+      <div className="min-h-screen pb-24">
+        <PageHero
+          eyebrow="Interactive Testing"
+          title="Quiz Centre"
+          description="Select a subject to begin your forensic science knowledge check."
+        />
+
+        {/* Search */}
+        <div className="max-w-7xl mx-auto px-6 md:px-12 -mt-8 relative z-20">
+          <div className="relative max-w-md mx-auto">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search subjects…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-12 py-3.5 rounded-2xl border border-slate-200 bg-white/70 backdrop-blur-sm text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all shadow-sm"
+            />
+            {q && (
+              <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <motion.div 
+          className="max-w-7xl mx-auto px-6 md:px-12 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+          initial="hidden"
+          animate="visible"
+          variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
+        >
+          {filtered.map((subject, i) => (
+            <motion.button
+              key={subject._id}
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}
+              onClick={() => startQuiz(subject)}
+              className="card-panel group cursor-pointer flex flex-col p-6 text-left hover:shadow-xl hover:-translate-y-1 transition-all duration-500 h-[160px]"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent shrink-0 group-hover:bg-accent group-hover:text-white transition-all duration-500">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display font-bold text-sm text-slate-900 group-hover:text-accent transition-colors mb-1 leading-tight">
+                    {subject.name}
+                  </h3>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                    {subject.questionCount > 0 ? `${subject.questionCount} Questions` : 'Coming Soon'}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-auto pt-4 border-t border-slate-100">
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-accent group-hover:text-accent">
+                  Start Quiz <ArrowRight className="w-3 h-3" />
+                </span>
+              </div>
+            </motion.button>
+          ))}
+        </motion.div>
+      </div>
+    );
+  }
+
+  // ─── Loading State ─────────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-accent/20 border-t-accent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-500 text-sm font-light">Loading quiz for {selectedSubject.name}…</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── No Questions State ────────────────────────────────────
+  if (questions.length === 0) {
+    return (
+      <div className="min-h-screen pb-24">
+        <PageHero
+          eyebrow={selectedSubject.name}
+          title="No Questions Yet"
+          description="Quiz questions for this subject have not been added yet. Check back later."
+        />
+        <div className="max-w-3xl mx-auto px-6 mt-12 text-center">
+          <div className="w-20 h-20 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <AlertCircle className="w-10 h-10 text-orange-400" />
+          </div>
+          <button onClick={goBack} className="pill-button bg-accent text-white hover:bg-[#6d28d9] flex items-center gap-2 mx-auto transition-all">
+            <ArrowLeft className="w-4 h-4" /> Choose Another Subject
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Quiz Flow ─────────────────────────────────────────────
   return (
     <div className="min-h-screen pb-24">
       <PageHero
-        eyebrow="Interactive Testing"
+        eyebrow={selectedSubject.name}
         title="Knowledge Check"
-        description="Verify your understanding of forensic protocols and terminology with our practice modules."
+        description={`Test your understanding of ${selectedSubject.name} with ${questions.length} questions.`}
       />
 
       <div className="max-w-3xl mx-auto px-6 mt-12">
+        <button onClick={goBack} className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-accent transition-colors mb-6 group">
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          Back to Subjects
+        </button>
+
         <AnimatePresence mode="wait">
           {!isFinished ? (
             <motion.div
@@ -117,7 +268,8 @@ export default function QuizClient({ questions }: { questions: QuizQuestion[] })
                 <CheckCircle2 className="w-10 h-10" />
               </div>
               <h2 className="text-3xl font-display font-bold text-slate-900 mb-4">Quiz Completed</h2>
-              <p className="text-slate-500 mb-8">You scored {score} out of {questions.length} points.</p>
+              <p className="text-slate-500 mb-2">Subject: <strong className="text-slate-700">{selectedSubject.name}</strong></p>
+              <p className="text-slate-500 mb-8">You scored <strong className="text-slate-900">{score}</strong> out of <strong className="text-slate-900">{questions.length}</strong> points.</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button
@@ -126,8 +278,8 @@ export default function QuizClient({ questions }: { questions: QuizQuestion[] })
                 >
                   <RotateCcw className="w-4 h-4" /> Retake Quiz
                 </button>
-                <button className="pill-button bg-cta text-white hover:bg-blue-800">
-                  Review Protocols
+                <button onClick={goBack} className="pill-button bg-cta text-white hover:bg-blue-800 flex items-center justify-center gap-2">
+                  <ArrowLeft className="w-4 h-4" /> Other Subjects
                 </button>
               </div>
             </motion.div>

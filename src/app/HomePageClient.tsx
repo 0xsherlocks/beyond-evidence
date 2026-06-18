@@ -2,13 +2,15 @@
 
 import { useRef, MouseEvent } from 'react';
 import { motion, Variants, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
-import { ArrowRight, BookOpen, Microscope, BookCheck, ArrowUpRight } from 'lucide-react';
+import { ArrowRight, BookOpen, Microscope, BookCheck, ArrowUpRight, BellRing, Target } from 'lucide-react';
 import Link from 'next/link';
 
 const ICON_MAP: Record<string, any> = {
   BookOpen,
   Microscope,
   BookCheck,
+  BellRing,
+  Target,
 };
 
 const containerVariants: Variants = {
@@ -72,26 +74,51 @@ function ValuePropCard({ item, index }: { item: any, index: number }) {
       style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
       className="group flex flex-col items-center text-center p-0 transition-all duration-300 hover:-translate-y-1"
     >
-      <div 
-        style={{ transformStyle: "preserve-3d" }}
-        className="w-full h-[320px] md:h-[380px] rounded-[2rem] overflow-hidden mb-10 relative bg-white border border-slate-100 shadow-sm group-hover:shadow-[0_20px_40px_-15px_rgba(139,92,246,0.2)] group-hover:border-violet-200 transition-all duration-700"
-      >
-        <img
-          src={item.resolvedImage}
-          alt={item.title}
-          className="absolute inset-0 w-full h-full object-cover grayscale opacity-0 group-hover:opacity-10 scale-110 group-hover:scale-100 mix-blend-multiply transition-all duration-1000"
-        />
-        <div className="absolute inset-x-0 bottom-8 flex flex-col items-center px-6 z-10" style={{ transformStyle: "preserve-3d" }}>
+      {item.link ? (
+        <Link href={item.link} className="w-full h-full block">
           <div 
-            style={{ transform: "translateZ(50px)" }}
-            className="w-14 h-14 rounded-2xl bg-accent/5 border border-accent/20 flex items-center justify-center text-accent mb-4 group-hover:bg-accent group-hover:text-white transition-all duration-500"
+            style={{ transformStyle: "preserve-3d" }}
+            className="w-full h-[320px] md:h-[380px] rounded-[2rem] overflow-hidden mb-10 relative bg-white border border-slate-100 shadow-sm group-hover:shadow-[0_20px_40px_-15px_rgba(139,92,246,0.2)] group-hover:border-violet-200 transition-all duration-700 cursor-pointer"
           >
-            <IconComponent className="w-7 h-7" />
+            <img
+              src={item.resolvedImage}
+              alt={item.title}
+              className="absolute inset-0 w-full h-full object-cover grayscale opacity-0 group-hover:opacity-10 scale-110 group-hover:scale-100 mix-blend-multiply transition-all duration-1000"
+            />
+            <div className="absolute inset-x-0 bottom-8 flex flex-col items-center px-6 z-10" style={{ transformStyle: "preserve-3d" }}>
+              <div 
+                style={{ transform: "translateZ(50px)" }}
+                className="w-14 h-14 rounded-2xl bg-accent/5 border border-accent/20 flex items-center justify-center text-accent mb-4 group-hover:bg-accent group-hover:text-white transition-all duration-500"
+              >
+                <IconComponent className="w-7 h-7" />
+              </div>
+              <h3 style={{ transform: "translateZ(60px)" }} className="text-xl font-display font-bold mb-3 text-slate-900 drop-shadow-sm">{item.title}</h3>
+              <p style={{ transform: "translateZ(40px)" }} className="text-slate-600 font-light text-sm leading-relaxed drop-shadow-sm">{item.description}</p>
+            </div>
           </div>
-          <h3 style={{ transform: "translateZ(60px)" }} className="text-xl font-display font-bold mb-3 text-slate-900 drop-shadow-sm">{item.title}</h3>
-          <p style={{ transform: "translateZ(40px)" }} className="text-slate-600 font-light text-sm leading-relaxed drop-shadow-sm">{item.description}</p>
+        </Link>
+      ) : (
+        <div 
+          style={{ transformStyle: "preserve-3d" }}
+          className="w-full h-[320px] md:h-[380px] rounded-[2rem] overflow-hidden mb-10 relative bg-white border border-slate-100 shadow-sm group-hover:shadow-[0_20px_40px_-15px_rgba(139,92,246,0.2)] group-hover:border-violet-200 transition-all duration-700"
+        >
+          <img
+            src={item.resolvedImage}
+            alt={item.title}
+            className="absolute inset-0 w-full h-full object-cover grayscale opacity-0 group-hover:opacity-10 scale-110 group-hover:scale-100 mix-blend-multiply transition-all duration-1000"
+          />
+          <div className="absolute inset-x-0 bottom-8 flex flex-col items-center px-6 z-10" style={{ transformStyle: "preserve-3d" }}>
+            <div 
+              style={{ transform: "translateZ(50px)" }}
+              className="w-14 h-14 rounded-2xl bg-accent/5 border border-accent/20 flex items-center justify-center text-accent mb-4 group-hover:bg-accent group-hover:text-white transition-all duration-500"
+            >
+              <IconComponent className="w-7 h-7" />
+            </div>
+            <h3 style={{ transform: "translateZ(60px)" }} className="text-xl font-display font-bold mb-3 text-slate-900 drop-shadow-sm">{item.title}</h3>
+            <p style={{ transform: "translateZ(40px)" }} className="text-slate-600 font-light text-sm leading-relaxed drop-shadow-sm">{item.description}</p>
+          </div>
         </div>
-      </div>
+      )}
     </motion.div>
   );
 }
@@ -136,7 +163,7 @@ function TopicCard({ topic, index }: { topic: any, index: number }) {
       className="h-[300px] md:h-[360px]"
     >
       <motion.a 
-        href={topic.link || '/topics'}
+        href={topic.link || '/syllabus'}
         ref={ref}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -198,7 +225,7 @@ export default function HomePageClient(props: HomePageClientProps) {
   return (
     <div className="flex flex-col w-full overflow-hidden">
       {/* Hero Section */}
-      <section className="relative px-6 md:px-12 py-20 md:py-32 lg:py-40 flex items-center justify-center min-h-[85vh]">
+      <section className="relative px-6 md:px-12 pt-20 pb-16 md:pt-28 md:pb-20 lg:pt-32 lg:pb-20 flex items-center justify-center">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
 
         <div className="max-w-5xl mx-auto w-full flex flex-col items-center">
@@ -229,7 +256,7 @@ export default function HomePageClient(props: HomePageClientProps) {
               variants={itemVariants}
               className="flex flex-col sm:flex-row items-center justify-center gap-8"
             >
-              <Link href="/topics" className="pill-button bg-accent text-white hover:bg-[#6d28d9] flex items-center gap-3 shadow-lg shadow-accent/20 transition-all hover:-translate-y-1">
+              <Link href="/syllabus" className="pill-button bg-accent text-white hover:bg-[#6d28d9] flex items-center gap-3 shadow-lg shadow-accent/20 transition-all hover:-translate-y-1">
                 Explore Library <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link href="/research" className="text-sm font-bold uppercase tracking-[0.3em] text-slate-600 hover:text-accent transition-colors">
@@ -284,7 +311,7 @@ export default function HomePageClient(props: HomePageClientProps) {
               <span className="eyebrow">{props.featuredTopicsEyebrow}</span>
               <h2 className="text-4xl md:text-5xl font-display font-bold mt-4 text-slate-900 tracking-tighter">{props.featuredTopicsTitle}</h2>
             </motion.div>
-            <Link href="/topics" className="pill-button border border-slate-200 text-slate-900 hover:bg-slate-50 flex items-center gap-2 group transition-all hover:-translate-y-1">
+            <Link href="/syllabus" className="pill-button border border-slate-200 text-slate-900 hover:bg-slate-50 flex items-center gap-2 group transition-all hover:-translate-y-1">
               Browse Directory <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
