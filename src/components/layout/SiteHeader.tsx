@@ -14,9 +14,10 @@ interface NavLink {
 
 const DEFAULT_NAV_LINKS: NavLink[] = [
   { label: 'Home', href: '/' },
-  { label: 'Topics', href: '/topics' },
-  { label: 'Research Desk', href: '/research' },
+  { label: 'Syllabus', href: '/syllabus' },
+  { label: 'Research', href: '/research' },
   { label: 'Quiz', href: '/quiz' },
+  { label: 'Study Material', href: '/study-material' },
   { label: 'Contact', href: '/contact' },
 ];
 

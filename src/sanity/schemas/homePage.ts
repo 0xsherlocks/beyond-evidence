@@ -10,26 +10,26 @@ export const homePage = defineType({
       name: 'heroTitle',
       title: 'Hero Title (Line 1)',
       type: 'string',
-      initialValue: 'Decode the Unseen.',
+      initialValue: 'Master Forensic Science.',
     }),
     defineField({
       name: 'heroTitleLine2',
       title: 'Hero Title (Line 2 - lighter color)',
       type: 'string',
-      initialValue: 'Master Intelligence.',
+      initialValue: 'Achieve Your Goals.',
     }),
     defineField({
       name: 'heroHighlight',
       title: 'Hero Highlight Text (bold)',
       type: 'string',
-      initialValue: 'Proving everything with forensic science.',
+      initialValue: 'Your ultimate destination for UGC NET JRF preparation.',
     }),
     defineField({
       name: 'heroDescription',
       title: 'Hero Description',
       type: 'text',
       rows: 3,
-      initialValue: 'Empowering students and professionals with top-tier customized courses, expert guidance, and comprehensive learning resources to excel in the field.',
+      initialValue: 'Empowering students with expert-curated study materials, mock tests, and comprehensive guidance to excel in forensic science examinations.',
     }),
 
     // Value Proposition Section
@@ -37,18 +37,23 @@ export const homePage = defineType({
       name: 'valuePropEyebrow',
       title: 'Value Prop Section Eyebrow',
       type: 'string',
-      initialValue: 'The Curriculum',
+      initialValue: 'Our Features',
     }),
     defineField({
       name: 'valuePropTitle',
       title: 'Value Prop Section Title',
       type: 'string',
-      initialValue: 'Structured for Discovery',
+      initialValue: 'Why Choose Beyond Evidence?',
     }),
     defineField({
       name: 'valueProps',
       title: 'Value Proposition Cards',
       type: 'array',
+      initialValue: [
+        { title: 'Live Job Alerts', description: 'Get the latest updates on forensic vacancies, internships, and government exams delivered instantly.', iconName: 'BellRing', link: '/notification' },
+        { title: 'Mock Tests', description: 'Test your preparation with high-quality, exam-pattern question sets and detailed performance analytics.', iconName: 'BookCheck', link: '/quiz' },
+        { title: 'UGC NET Focused', description: 'Premium study material perfectly aligned with the latest NTA UGC NET syllabus for Forensic Science.', iconName: 'Target', link: '/study-material/ugc-net-jrf' },
+      ],
       of: [
         {
           type: 'object',
@@ -58,6 +63,7 @@ export const homePage = defineType({
             defineField({ name: 'iconName', title: 'Icon Name', type: 'string', description: 'lucide-react icon name: BookOpen, Microscope, BookCheck' }),
             defineField({ name: 'image', title: 'Background Image', type: 'image', options: { hotspot: true } }),
             defineField({ name: 'imageUrl', title: 'Image URL (external)', type: 'url' }),
+            defineField({ name: 'link', title: 'Link (optional)', type: 'string', description: 'e.g. /study-material or /contact' }),
           ],
           preview: {
             select: { title: 'title' },
@@ -71,13 +77,13 @@ export const homePage = defineType({
       name: 'featuredTopicsEyebrow',
       title: 'Featured Topics Eyebrow',
       type: 'string',
-      initialValue: 'Interactive Index',
+      initialValue: 'Explore Subjects',
     }),
     defineField({
       name: 'featuredTopicsTitle',
       title: 'Featured Topics Title',
       type: 'string',
-      initialValue: 'Explore the Disciplines',
+      initialValue: 'Browse the Syllabus',
     }),
     defineField({
       name: 'featuredTopics',
@@ -91,7 +97,7 @@ export const homePage = defineType({
             defineField({ name: 'number', title: 'Display Number', type: 'string', description: 'e.g. 01, 02' }),
             defineField({ name: 'image', title: 'Background Image', type: 'image', options: { hotspot: true } }),
             defineField({ name: 'imageUrl', title: 'Image URL (external)', type: 'url' }),
-            defineField({ name: 'link', title: 'Link', type: 'string', initialValue: '/topics' }),
+            defineField({ name: 'link', title: 'Link', type: 'string', initialValue: '/syllabus' }),
           ],
           preview: {
             select: { title: 'name', subtitle: 'number' },
@@ -105,14 +111,14 @@ export const homePage = defineType({
       name: 'bannerTitle',
       title: 'Banner Title',
       type: 'string',
-      initialValue: 'Accelerate the Intelligence Cycle.',
+      initialValue: 'Start Your Preparation Today.',
     }),
     defineField({
       name: 'bannerDescription',
       title: 'Banner Description',
       type: 'text',
       rows: 2,
-      initialValue: 'Join a network of academic researchers and investigators contributing to our peer-reviewed knowledge base.',
+      initialValue: 'Access premium study materials and take the first step towards your dream career in forensic science.',
     }),
     defineField({
       name: 'bannerImageUrl',
@@ -123,19 +129,19 @@ export const homePage = defineType({
       name: 'bannerCta1Text',
       title: 'Banner CTA 1 Text',
       type: 'string',
-      initialValue: 'Join the Network',
+      initialValue: 'View Study Materials',
     }),
     defineField({
       name: 'bannerCta1Link',
       title: 'Banner CTA 1 Link',
       type: 'string',
-      initialValue: '/studio',
+      initialValue: '/study-material',
     }),
     defineField({
       name: 'bannerCta2Text',
       title: 'Banner CTA 2 Text',
       type: 'string',
-      initialValue: 'Contact Board',
+      initialValue: 'Contact Us',
     }),
     defineField({
       name: 'bannerCta2Link',

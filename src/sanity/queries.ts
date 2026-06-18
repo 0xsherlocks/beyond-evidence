@@ -55,20 +55,42 @@ export async function getHomePage() {
   )
 }
 
-// ─── Topics ──────────────────────────────────────────────────
-export async function getTopics() {
+// ─── Subjects (Syllabus) ─────────────────────────────────────
+export async function getSubjects() {
   return sanityClient.fetch(
-    `*[_type == "topic"] | order(order asc){
+    `*[_type == "subject"] | order(order asc){
       _id,
       name,
       "slug": slug.current,
       description,
       image,
       imageUrl,
-      moduleCount,
+      "moduleCount": count(modules),
       order
     }`,
     {},
+    NO_CACHE
+  )
+}
+
+export async function getSubjectBySlug(slug: string) {
+  return sanityClient.fetch(
+    `*[_type == "subject" && slug.current == $slug][0]{
+      _id,
+      name,
+      "slug": slug.current,
+      description,
+      image,
+      imageUrl,
+      modules[] | order(order asc){
+        title,
+        description,
+        "fileUrl": file.asset->url,
+        link,
+        order
+      }
+    }`,
+    { slug },
     NO_CACHE
   )
 }
@@ -218,15 +240,34 @@ export async function getContactPage() {
 }
 
 // ─── Quiz ────────────────────────────────────────────────────
-export async function getQuizQuestions() {
+// Get all subjects that have quiz questions
+export async function getQuizSubjects() {
   return sanityClient.fetch(
-    `*[_type == "quizQuestion"] | order(order asc){
+    `*[_type == "subject"] | order(order asc){
+      _id,
+      name,
+      "slug": slug.current,
+      image,
+      imageUrl,
+      "questionCount": count(*[_type == "quizQuestion" && subject._ref == ^._id])
+    }`,
+    {},
+    NO_CACHE
+  )
+}
+
+// Get quiz questions for a specific subject
+export async function getQuizBySubject(subjectId: string) {
+  return sanityClient.fetch(
+    `*[_type == "quizQuestion" && subject._ref == $subjectId] | order(order asc){
       _id,
       question,
       options,
-      correctAnswer
+      correctAnswer,
+      "resourceFileUrl": resourceFile.asset->url,
+      resourceLink
     }`,
-    {},
+    { subjectId },
     NO_CACHE
   )
 }
@@ -260,3 +301,66 @@ export async function getNotifications() {
   )
 }
 
+// ─── Study Materials ─────────────────────────────────────────
+export async function getStudyMaterials() {
+  return sanityClient.fetch(
+    `*[_type == "studyMaterial"] | order(order asc){
+      _id,
+      title,
+      "slug": slug.current,
+      description,
+      order
+    }`,
+    {},
+    NO_CACHE
+  )
+}
+
+export async function getStudyMaterialBySlug(slug: string) {
+  return sanityClient.fetch(
+    `*[_type == "studyMaterial" && slug.current == $slug][0]{
+      _id,
+      title,
+      "slug": slug.current,
+      description,
+      introParagraphs,
+      features[]{title, description, iconName},
+      packages[]{id, title, subtitle, price, badge, featuresList}
+    }`,
+    { slug },
+    NO_CACHE
+  )
+}
+
+// ─── DFSS Vacancies ──────────────────────────────────────────
+export async function getDfssVacancies() {
+  return sanityClient.fetch(
+    `*[_type == "dfssVacancy"] | order(scrapedAt desc){
+      _id,
+      title,
+      date,
+      notificationUrl,
+      sourceUrl,
+      scrapedAt,
+      fingerprint
+    }`,
+    {},
+    NO_CACHE
+  )
+}
+
+// ─── Notification Page Settings ──────────────────────────────
+export async function getNotificationPage() {
+  return sanityClient.fetch(
+    `*[_type == "notificationPage"][0]{
+      title,
+      description,
+      rssFeeds[]{
+        url,
+        sourceName
+      }
+    }`,
+    {},
+    NO_CACHE
+  )
+}

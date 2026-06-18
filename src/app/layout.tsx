@@ -22,13 +22,17 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "Beyond Evidence",
   description: "A curated database for technical investigators, bridging theoretical research, field SOPs, and advanced laboratory methodology.",
+  icons: {
+    icon: "/icon-circle.png",
+  },
 };
 
 const DEFAULT_HEADER_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'Topics', href: '/topics' },
+  { label: 'Syllabus', href: '/syllabus' },
   { label: 'Research', href: '/research' },
   { label: 'Quiz', href: '/quiz' },
+  { label: 'Study Material', href: '/study-material' },
   { label: 'Contact', href: '/contact' },
 ];
 
@@ -51,7 +55,37 @@ export default async function RootLayout({
   }
 
   const HOME_LINK = { label: 'Home', href: '/' };
-  const rawHeaderLinks = nav?.headerLinks?.length > 0 ? nav.headerLinks : DEFAULT_HEADER_LINKS;
+  let rawHeaderLinks = nav?.headerLinks?.length > 0 ? nav.headerLinks : DEFAULT_HEADER_LINKS;
+  
+  // Force inject Study Material if it's missing from Sanity's DB
+  const hasStudyMaterial = rawHeaderLinks.some((link: any) => link.href === '/study-material');
+  if (!hasStudyMaterial) {
+    // Replace UGC-NET or Topics if they exist, otherwise append before Contact
+    const updatedLinks = [];
+    let added = false;
+    for (const link of rawHeaderLinks) {
+      if (link.href === '/ugc-net' || link.href === '/topics' || link.label === 'UGC-NET' || link.label === 'Topics') {
+        if (!added) {
+          updatedLinks.push({ label: 'Study Material', href: '/study-material' });
+          added = true;
+        }
+      } else {
+        updatedLinks.push(link);
+      }
+    }
+    
+    if (!added) {
+      // Insert right before Contact
+      const contactIdx = updatedLinks.findIndex((l: any) => l.href === '/contact');
+      if (contactIdx >= 0) {
+        updatedLinks.splice(contactIdx, 0, { label: 'Study Material', href: '/study-material' });
+      } else {
+        updatedLinks.push({ label: 'Study Material', href: '/study-material' });
+      }
+    }
+    rawHeaderLinks = updatedLinks;
+  }
+
   const headerLinks = rawHeaderLinks[0]?.href === '/' ? rawHeaderLinks : [HOME_LINK, ...rawHeaderLinks];
   const footerLinks = nav?.footerLinks?.length > 0 ? nav.footerLinks : DEFAULT_FOOTER_LINKS;
 
