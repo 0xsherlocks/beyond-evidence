@@ -1,4 +1,4 @@
-import { getNotificationPage, getDfssVacancies } from '@/src/sanity/queries';
+import { getNotificationPage, getDfssVacancies, getNotifications } from '@/src/sanity/queries';
 import { fetchAllRssFeeds } from '@/src/lib/fetchRss';
 import NotificationClient from './NotificationClient';
 
@@ -28,8 +28,21 @@ export default async function NotificationPage() {
   const title = pageSettings?.title || 'Updates & Alerts';
   const description = pageSettings?.description || 'Stay updated with the latest announcements, job vacancies, and important updates from Beyond Evidence and around the forensic network.';
   
-  // Use feeds from Sanity if configured, otherwise fallback to the requested default feeds
-  const rssFeeds = pageSettings?.rssFeeds?.length > 0 ? pageSettings.rssFeeds : DEFAULT_FEEDS;
+  // Combine default feeds and Sanity feeds, removing duplicates
+  const sanityFeeds = pageSettings?.rssFeeds || [];
+  
+  // Use a Map to ensure unique URLs, prioritizing Sanity feeds if they have custom source names
+  const feedMap = new Map();
+  
+  // Add defaults first
+  DEFAULT_FEEDS.forEach(feed => feedMap.set(feed.url, feed));
+  
+  // Add sanity feeds (will overwrite defaults if same URL, allowing user to rename them)
+  sanityFeeds.forEach((feed: any) => {
+    if (feed.url) feedMap.set(feed.url, feed);
+  });
+  
+  const rssFeeds = Array.from(feedMap.values());
 
   // Fetch DFSS Vacancies from Sanity
   let dfssVacancies: any[] = [];
@@ -48,12 +61,21 @@ export default async function NotificationPage() {
     console.error("Failed to fetch RSS feeds", e);
   }
 
+  // Fetch Manual Notifications
+  let manualNotifications: any[] = [];
+  try {
+    manualNotifications = await getNotifications();
+  } catch (e) {
+    console.error("Failed to fetch manual notifications", e);
+  }
+
   return (
     <NotificationClient 
       title={title}
       description={description}
       dfssVacancies={dfssVacancies} 
       feedItems={feedItems} 
+      manualNotifications={manualNotifications}
     />
   );
 }

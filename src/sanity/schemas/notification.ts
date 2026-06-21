@@ -12,11 +12,49 @@ export const notification = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'message',
-      title: 'Message',
-      type: 'text',
-      rows: 3,
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      options: { source: 'title', maxLength: 96 },
       validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'excerpt',
+      title: 'Short Excerpt (For Card Preview)',
+      type: 'text',
+      rows: 2,
+      description: 'A short summary that appears on the main notification page.',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'content',
+      title: 'Full Announcement (Rich Text)',
+      type: 'array',
+      of: [
+        {
+          type: 'block',
+          styles: [
+            { title: 'Normal', value: 'normal' },
+            { title: 'H2', value: 'h2' },
+            { title: 'H3', value: 'h3' },
+            { title: 'Quote', value: 'blockquote' },
+          ],
+        },
+        {
+          type: 'image',
+          options: { hotspot: true },
+        },
+      ],
+    }),
+    defineField({
+      name: 'file',
+      title: 'Attachment (PDF/Word)',
+      type: 'file',
+    }),
+    defineField({
+      name: 'link',
+      title: 'External Link',
+      type: 'url',
     }),
     defineField({
       name: 'isNew',

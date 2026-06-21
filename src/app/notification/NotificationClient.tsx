@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 import PageHero from '@/src/components/PageHero';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Search, Filter, Briefcase, GraduationCap, FileSignature, Award, Calendar, Layers } from 'lucide-react';
+import { ExternalLink, Search, Filter, Briefcase, GraduationCap, FileSignature, Award, Calendar, Layers, ArrowUpRight } from 'lucide-react';
 import type { FeedItem } from '@/src/lib/fetchRss';
 
 interface NotificationClientProps {
@@ -11,6 +12,7 @@ interface NotificationClientProps {
   description: string;
   dfssVacancies: any[];
   feedItems: FeedItem[];
+  manualNotifications?: any[];
 }
 
 const CATEGORIES = ['All', 'Jobs', 'Internships', 'Exams', 'Scholarships', 'Workshops', 'Other'];
@@ -24,7 +26,7 @@ const categoryIcons: Record<string, any> = {
   Other: Layers
 };
 
-export default function NotificationClient({ title, description, dfssVacancies, feedItems }: NotificationClientProps) {
+export default function NotificationClient({ title, description, dfssVacancies, feedItems, manualNotifications = [] }: NotificationClientProps) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -67,6 +69,46 @@ export default function NotificationClient({ title, description, dfssVacancies, 
         title={title}
         description={description}
       />
+
+      {/* ─── OFFICIAL ANNOUNCEMENTS ───────────────────────────── */}
+      {manualNotifications.length > 0 && (
+        <section className="max-w-4xl mx-auto px-6 md:px-12 py-12">
+          <h2 className="text-3xl font-display font-bold text-slate-900 mb-8">Official Announcements</h2>
+          <div className="space-y-6">
+            {manualNotifications.map((notif: any) => (
+              <motion.div
+                key={notif._id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className={`card-panel p-6 md:p-8 rounded-[2rem] border-l-4 group ${notif.isNew ? 'border-l-rose-500' : 'border-l-accent'} hover:shadow-xl hover:-translate-y-1 transition-all duration-300`}
+              >
+                <Link href={notif.slug ? `/notification/${notif.slug}` : '#'} className="block">
+                  <div className="flex justify-between items-start gap-4 mb-3">
+                    <h3 className="font-display font-bold text-xl text-slate-900 group-hover:text-accent transition-colors">{notif.title}</h3>
+                    {notif.isNew && (
+                      <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold uppercase tracking-widest animate-pulse">
+                        NEW
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-slate-600 font-light leading-relaxed mb-4 line-clamp-3">
+                    {notif.excerpt}
+                  </p>
+                  <div className="flex items-center justify-between mt-6">
+                    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                      {notif.timestamp || "Just now"}
+                    </div>
+                    <span className="text-xs font-bold text-accent flex items-center gap-1 group-hover:gap-2 transition-all">
+                      Read Full Announcement <ArrowUpRight className="w-4 h-4" />
+                    </span>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ─── LIVE JOB & EXAM ALERTS ───────────────────────────── */}
       <section className="max-w-5xl mx-auto px-6 md:px-12 py-12">

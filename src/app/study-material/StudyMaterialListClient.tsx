@@ -27,8 +27,8 @@ export default function StudyMaterialListClient({ materials }: { materials: Stud
     <div className="min-h-screen pb-24">
       <PageHero
         eyebrow="Exam Preparation"
-        title="Study Materials"
-        description="Comprehensive notes, mock tests, and preparation guides for your forensic science examinations."
+        title="Competitive Exams"
+        description="Comprehensive notes, mock tests, and preparation guides for your forensic science competitive exams."
       />
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-12">

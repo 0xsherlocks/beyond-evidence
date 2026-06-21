@@ -85,6 +85,13 @@ export async function getSubjectBySlug(slug: string) {
       modules[] | order(order asc){
         title,
         description,
+        content[]{
+          ...,
+          _type == "image" => {
+            ...,
+            "asset": asset->{url}
+          }
+        },
         "fileUrl": file.asset->url,
         link,
         order
@@ -243,13 +250,13 @@ export async function getContactPage() {
 // Get all subjects that have quiz questions
 export async function getQuizSubjects() {
   return sanityClient.fetch(
-    `*[_type == "subject"] | order(order asc){
+    `*[_type == "quiz"] | order(order asc){
       _id,
-      name,
-      "slug": slug.current,
-      image,
-      imageUrl,
-      "questionCount": count(*[_type == "quizQuestion" && subject._ref == ^._id])
+      "name": subject->name,
+      "slug": subject->slug.current,
+      "image": subject->image,
+      "imageUrl": subject->imageUrl,
+      "questionCount": count(quizQuestions)
     }`,
     {},
     NO_CACHE
@@ -258,14 +265,13 @@ export async function getQuizSubjects() {
 
 // Get quiz questions for a specific subject
 export async function getQuizBySubject(subjectId: string) {
+  // We use the quiz document's _id as subjectId when clicking from the grid
   return sanityClient.fetch(
-    `*[_type == "quizQuestion" && subject._ref == $subjectId] | order(order asc){
-      _id,
-      question,
-      options,
-      correctAnswer,
-      "resourceFileUrl": resourceFile.asset->url,
-      resourceLink
+    `*[_type == "quiz" && _id == $subjectId][0].quizQuestions[]{
+      "question": question,
+      "options": options,
+      "correctAnswer": correctAnswer,
+      "explanation": explanation
     }`,
     { subjectId },
     NO_CACHE
@@ -292,11 +298,38 @@ export async function getNotifications() {
     `*[_type == "notification"] | order(order asc){
       _id,
       title,
-      message,
+      "slug": slug.current,
+      excerpt,
       isNew,
-      timestamp
+      timestamp,
+      link,
+      "fileUrl": file.asset->url
     }`,
     {},
+    NO_CACHE
+  )
+}
+
+export async function getNotificationBySlug(slug: string) {
+  return sanityClient.fetch(
+    `*[_type == "notification" && slug.current == $slug][0]{
+      _id,
+      title,
+      "slug": slug.current,
+      excerpt,
+      content[]{
+        ...,
+        _type == "image" => {
+          ...,
+          "asset": asset->{url}
+        }
+      },
+      isNew,
+      timestamp,
+      link,
+      "fileUrl": file.asset->url
+    }`,
+    { slug },
     NO_CACHE
   )
 }

@@ -58,6 +58,21 @@ const FALLBACK_DATA: Record<string, any> = {
     introParagraphs: ['Welcome to the SSO preparation module. Designed for professionals aiming for the Senior Scientific Officer designation.'],
     features: [{ title: 'Expert Notes', description: 'High-level scientific and administrative protocols.', iconName: 'BookOpen' }],
     packages: [{ id: 'full', title: 'Complete Course', subtitle: 'Comprehensive Material', price: '₹1999', badge: 'ELITE', featuresList: ['Expert Level Notes', 'Case Studies', 'Interview Prep Guide'] }]
+  },
+  'cuet-ug-pg': {
+    title: 'CUET UG & PG Preparation',
+    description: 'Comprehensive study material and mock tests for CUET UG and PG forensic science exams.',
+    introParagraphs: [
+      'Welcome to the CUET UG & PG preparation module.',
+      'This material is specially curated to help you crack the Common University Entrance Test for both Undergraduate and Postgraduate forensic science programs.'
+    ],
+    features: [
+      { title: 'Syllabus-Aligned Notes', description: 'Notes perfectly aligned with the latest CUET syllabus.', iconName: 'BookOpen' },
+      { title: 'Practice Mocks', description: 'Exam-oriented practice questions to boost your speed and accuracy.', iconName: 'ClipboardList' },
+    ],
+    packages: [
+      { id: 'full', title: 'Complete Course', subtitle: 'Notes + Mocks', price: '₹999', badge: 'BEST VALUE', featuresList: ['Syllabus-Aligned Notes', 'Practice Mock Tests', 'Digital PDF Format'] }
+    ]
   }
 };
 

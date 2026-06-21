@@ -32,7 +32,7 @@ const DEFAULT_HEADER_LINKS = [
   { label: 'Syllabus', href: '/syllabus' },
   { label: 'Research', href: '/research' },
   { label: 'Quiz', href: '/quiz' },
-  { label: 'Study Material', href: '/study-material' },
+  { label: 'Competitive Exams', href: '/study-material' },
   { label: 'Contact', href: '/contact' },
 ];
 
@@ -57,7 +57,15 @@ export default async function RootLayout({
   const HOME_LINK = { label: 'Home', href: '/' };
   let rawHeaderLinks = nav?.headerLinks?.length > 0 ? nav.headerLinks : DEFAULT_HEADER_LINKS;
   
-  // Force inject Study Material if it's missing from Sanity's DB
+  // Force rename 'Study Material' to 'Competitive Exams' if it came from Sanity
+  rawHeaderLinks = rawHeaderLinks.map((link: any) => {
+    if (link.href === '/study-material') {
+      return { ...link, label: 'Competitive Exams' };
+    }
+    return link;
+  });
+
+  // Force inject Competitive Exams if it's missing from Sanity's DB
   const hasStudyMaterial = rawHeaderLinks.some((link: any) => link.href === '/study-material');
   if (!hasStudyMaterial) {
     // Replace UGC-NET or Topics if they exist, otherwise append before Contact
@@ -66,7 +74,7 @@ export default async function RootLayout({
     for (const link of rawHeaderLinks) {
       if (link.href === '/ugc-net' || link.href === '/topics' || link.label === 'UGC-NET' || link.label === 'Topics') {
         if (!added) {
-          updatedLinks.push({ label: 'Study Material', href: '/study-material' });
+          updatedLinks.push({ label: 'Competitive Exams', href: '/study-material' });
           added = true;
         }
       } else {
@@ -78,9 +86,9 @@ export default async function RootLayout({
       // Insert right before Contact
       const contactIdx = updatedLinks.findIndex((l: any) => l.href === '/contact');
       if (contactIdx >= 0) {
-        updatedLinks.splice(contactIdx, 0, { label: 'Study Material', href: '/study-material' });
+        updatedLinks.splice(contactIdx, 0, { label: 'Competitive Exams', href: '/study-material' });
       } else {
-        updatedLinks.push({ label: 'Study Material', href: '/study-material' });
+        updatedLinks.push({ label: 'Competitive Exams', href: '/study-material' });
       }
     }
     rawHeaderLinks = updatedLinks;

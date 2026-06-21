@@ -19,8 +19,8 @@ interface QuizQuestion {
   question: string;
   options: string[];
   correctAnswer: number;
-  resourceFileUrl?: string;
-  resourceLink?: string;
+  correctAnswer: number;
+  explanation?: string;
 }
 
 export default function QuizClient({ subjects }: { subjects: SubjectItem[] }) {
@@ -30,6 +30,7 @@ export default function QuizClient({ subjects }: { subjects: SubjectItem[] }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [score, setScore] = useState(0);
+  const [userAnswers, setUserAnswers] = useState<number[]>([]);
   const [isFinished, setIsFinished] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -56,9 +57,13 @@ export default function QuizClient({ subjects }: { subjects: SubjectItem[] }) {
   };
 
   const handleNext = () => {
-    if (selectedOption === questions[currentStep].correctAnswer) {
-      setScore(s => s + 1);
+    if (selectedOption !== null) {
+      setUserAnswers(prev => [...prev, selectedOption]);
+      if (selectedOption === questions[currentStep].correctAnswer) {
+        setScore(s => s + 1);
+      }
     }
+    
     if (currentStep < questions.length - 1) {
       setCurrentStep(c => c + 1);
       setSelectedOption(null);
@@ -71,6 +76,7 @@ export default function QuizClient({ subjects }: { subjects: SubjectItem[] }) {
     setCurrentStep(0);
     setSelectedOption(null);
     setScore(0);
+    setUserAnswers([]);
     setIsFinished(false);
   };
 
@@ -80,6 +86,7 @@ export default function QuizClient({ subjects }: { subjects: SubjectItem[] }) {
     setCurrentStep(0);
     setSelectedOption(null);
     setScore(0);
+    setUserAnswers([]);
     setIsFinished(false);
   };
 
@@ -262,16 +269,61 @@ export default function QuizClient({ subjects }: { subjects: SubjectItem[] }) {
               key="result"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="card-panel p-12 text-center"
+              className="card-panel p-8 md:p-12 text-left"
             >
-              <div className="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-8">
-                <CheckCircle2 className="w-10 h-10" />
+              <div className="text-center mb-10">
+                <div className="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle2 className="w-10 h-10" />
+                </div>
+                <h2 className="text-3xl font-display font-bold text-slate-900 mb-2">Quiz Completed</h2>
+                <p className="text-slate-500">Subject: <strong className="text-slate-700">{selectedSubject.name}</strong></p>
+                <div className="mt-4 text-2xl font-bold text-slate-900">
+                  You scored {score} out of {questions.length}
+                </div>
               </div>
-              <h2 className="text-3xl font-display font-bold text-slate-900 mb-4">Quiz Completed</h2>
-              <p className="text-slate-500 mb-2">Subject: <strong className="text-slate-700">{selectedSubject.name}</strong></p>
-              <p className="text-slate-500 mb-8">You scored <strong className="text-slate-900">{score}</strong> out of <strong className="text-slate-900">{questions.length}</strong> points.</p>
+
+              <div className="space-y-8 mb-12">
+                <h3 className="font-display font-bold text-xl text-slate-900 border-b border-slate-100 pb-4">Detailed Review</h3>
+                {questions.map((q, i) => {
+                  const isCorrect = userAnswers[i] === q.correctAnswer;
+                  return (
+                    <div key={i} className="p-6 rounded-2xl border border-slate-200 bg-slate-50">
+                      <div className="flex items-start gap-4 mb-4">
+                        <span className={cn(
+                          "shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white",
+                          isCorrect ? "bg-green-500" : "bg-rose-500"
+                        )}>
+                          {i + 1}
+                        </span>
+                        <div>
+                          <p className="font-medium text-slate-900 text-lg leading-tight mb-2">{q.question}</p>
+                          <div className="space-y-2 mt-4">
+                            <p className="text-sm">
+                              <span className="text-slate-500">Your Answer: </span>
+                              <span className={cn("font-semibold", isCorrect ? "text-green-600" : "text-rose-600")}>
+                                {q.options[userAnswers[i]]}
+                              </span>
+                            </p>
+                            {!isCorrect && (
+                              <p className="text-sm">
+                                <span className="text-slate-500">Correct Answer: </span>
+                                <span className="font-semibold text-green-600">{q.options[q.correctAnswer]}</span>
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      {q.explanation && (
+                        <div className="mt-4 pt-4 border-t border-slate-200">
+                          <p className="text-sm text-slate-600"><strong className="text-slate-900">Explanation: </strong>{q.explanation}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
                   onClick={resetQuiz}
                   className="pill-button border border-slate-200 hover:bg-slate-50 flex items-center justify-center gap-2"
@@ -279,7 +331,7 @@ export default function QuizClient({ subjects }: { subjects: SubjectItem[] }) {
                   <RotateCcw className="w-4 h-4" /> Retake Quiz
                 </button>
                 <button onClick={goBack} className="pill-button bg-cta text-white hover:bg-blue-800 flex items-center justify-center gap-2">
-                  <ArrowLeft className="w-4 h-4" /> Other Subjects
+                  <ArrowLeft className="w-4 h-4" /> Choose Another Subject
                 </button>
               </div>
             </motion.div>
