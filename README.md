@@ -3,7 +3,7 @@
 
 # Beyond Evidence
 
-**A Premium Academic & Research Hub for Forensic Science**
+**A Premium LMS & Research Hub for Forensic Science**
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![Sanity](https://img.shields.io/badge/Sanity-Studio-F03E2F?style=flat&logo=sanity)](https://www.sanity.io/)
@@ -14,21 +14,32 @@
 
 ## Overview
 
-**Beyond Evidence** is a modern, CMS-driven educational platform designed for students, researchers, and professionals in forensic science and criminology. It provides an interactive directory of topics, a comprehensive research guide, and curated tools to help academics find, organize, and publish research.
+**Beyond Evidence** is a modern, CMS-driven educational platform designed for students, researchers, and professionals in forensic science and criminology. Evolving from a resource directory into a full-scale **Learning Management System (LMS)**, it provides an interactive syllabus, dynamic quizzes, real-time job alerts, and curated tools to help academics excel in their careers.
 
 The platform is built with a focus on premium aesthetics, featuring a "glassmorphic" forensic theme, smooth dynamic animations, and a fully customizable content pipeline powered by Sanity CMS.
 
 ## Key Features
 
-- 📚 **Interactive Topics Directory:** A sleek, peer-reviewed hub of forensic protocols, articles, and research modules with real-time search filtering.
-- 🔬 **Research Desk:** A step-by-step roadmap and categorized resource hub (Databases, AI Tools, Citation Generators) with fallback icon support and custom Sanity-uploaded logos.
-- 📝 **Sanity CMS Integration:** Fully customized singleton schemas for real-time content updates without touching code. Editors can manage texts, links, and imagery directly from the `/studio` route.
-- ✨ **Premium UI/UX:** Built with Tailwind CSS and Framer Motion for scroll-triggered staggered animations, glassmorphic cards, and dynamic layout routing.
+- 🎓 **LMS Course Player (Syllabus):** A beautiful, responsive course player supporting native Rich Text. Instructors can craft lesson modules with inline images, custom alignments, blockquotes, and lists directly from Sanity, completely replacing the need for clunky PDF downloads.
+- 📝 **Interactive Quiz System:** A dedicated testing center where students can take quizzes across different subjects. Features a comprehensive post-quiz review that highlights correct/incorrect answers and displays detailed instructor explanations.
+- 🔔 **Dynamic Notifications & Alerts:** A hybrid notification center that intelligently merges live RSS feeds from top Indian Government Job portals with custom, rich-text "Official Announcements" pushed directly from Sanity Studio.
+- 📚 **Study Material & Competitive Exams:** Curated learning tracks for highly sought-after exams like UGC NET JRF, CUET, and DFSS vacancies.
+- 🔬 **Research Desk:** A step-by-step roadmap and categorized resource hub (Databases, AI Tools, Citation Generators) with custom Sanity-uploaded logos.
+- ✨ **Premium UI/UX:** Built with Tailwind CSS and Framer Motion for scroll-triggered staggered animations, interactive hover states, and dynamic layout routing.
+
+## The Sanity Studio CMS
+
+The content architecture is meticulously organized in the embedded Sanity Studio (`/studio`):
+
+- **Subjects (Syllabus):** Create and manage subjects, upload cover images, and use the Portable Text editor to build out full-length course modules.
+- **Quizzes:** Create dedicated quizzes linked to specific subjects. Add multiple-choice questions, set correct answers, and write detailed explanations.
+- **Official Announcements (Alerts):** Push "NEW" pulsing alerts to the website. Clicking them opens dedicated landing pages with rich text, external links, and downloadable PDF attachments.
+- **Singletons:** Manage Site Settings, Navigation menus, and static pages (Home, About, Research) seamlessly.
 
 ## Tech Stack
 
 - **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
-- **CMS:** [Sanity](https://www.sanity.io/) (Embedded Studio)
+- **CMS:** [Sanity](https://www.sanity.io/) (Embedded Studio v3)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 - **Animations:** [Framer Motion](https://www.framer.com/motion/)
 - **Icons:** [Lucide React](https://lucide.dev/)
@@ -77,6 +88,7 @@ http://localhost:3000/studio
 
 ## Project Structure
 
-- `src/app/`: Next.js App Router pages (Home, Topics, Research, Quiz, Contact, Notification).
-- `src/components/`: Reusable React components (UI elements, Layout, PageHero).
-- `src/sanity/`: Sanity CMS configuration, schemas, queries, and client setup.
+- `src/app/`: Next.js App Router pages (`/syllabus`, `/quiz`, `/notification`, etc.).
+- `src/components/`: Reusable React components (UI elements, Layouts, PageHero).
+- `src/sanity/`: Sanity CMS configuration, custom Structure Builders, schemas, and GROQ queries.
+- `src/lib/`: Utility functions including the dynamic RSS feed fetcher (`fetchRss.ts`).

@@ -7,8 +7,8 @@ import { webinar } from './webinar'
 import { learningTrack } from './learningTrack'
 import { aboutPage } from './aboutPage'
 import { contactPage } from './contactPage'
-import { quizQuestion } from './quizQuestion'
 import { legalPage } from './legalPage'
+import { quiz } from './quiz'
 import { notification } from './notification'
 import { researchPage } from './researchPage'
 import { studyMaterial } from './studyMaterial'
@@ -31,7 +31,7 @@ export const schemaTypes = [
   researchArticle,
   webinar,
   learningTrack,
-  quizQuestion,
+  quiz,
   notification,
   studyMaterial,
   dfssVacancy,
