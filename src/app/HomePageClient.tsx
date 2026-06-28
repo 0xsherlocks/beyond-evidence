@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, MouseEvent } from 'react';
-import { motion, Variants, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
+import { useRef, MouseEvent, useState, useEffect } from 'react';
+import { motion, Variants, useScroll, useTransform, useSpring, useMotionValue, AnimatePresence } from 'framer-motion';
 import { ArrowRight, BookOpen, Microscope, BookCheck, ArrowUpRight, BellRing, Target } from 'lucide-react';
 import Link from 'next/link';
+import Logo from '@/src/components/Logo';
 
 const ICON_MAP: Record<string, any> = {
   BookOpen,
@@ -222,10 +223,76 @@ export default function HomePageClient(props: HomePageClientProps) {
   const heroY = useTransform(scrollY, [0, 500], [0, 250]);
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
 
+  const [showSplash, setShowSplash] = useState(false);
+  const [introWordIndex, setIntroWordIndex] = useState(0);
+  const introWords = ["EDUCATION", "RESEARCH", "CAREER"];
+
+  useEffect(() => {
+    const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
+    
+    if (!hasSeenSplash) {
+      // Small delay so user doesn't see a flicker
+      setTimeout(() => setShowSplash(true), 100);
+      
+      const interval = setInterval(() => {
+        setIntroWordIndex((prev) => {
+          if (prev < 2) return prev + 1;
+          clearInterval(interval);
+          return prev;
+        });
+      }, 1000);
+
+      setTimeout(() => {
+        setShowSplash(false);
+        sessionStorage.setItem('hasSeenSplash', 'true');
+      }, 3800);
+      
+      return () => clearInterval(interval);
+    }
+  }, []);
+
   return (
     <div className="flex flex-col w-full overflow-hidden">
+      <AnimatePresence>
+        {showSplash && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-violet-50/50 via-white to-sky-50/50" />
+            
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="relative flex flex-col items-center z-10"
+            >
+              <Logo showIcon={true} showSubtitle={false} className="scale-[2] mb-16" />
+              
+              <div className="h-10 relative flex items-center justify-center w-full overflow-hidden mt-6">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={introWords[introWordIndex]}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -20, opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="absolute text-xl md:text-2xl font-display font-bold tracking-[0.3em] text-slate-800"
+                  >
+                    {introWords[introWordIndex]}
+                  </motion.span>
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Hero Section */}
-      <section className="relative px-6 md:px-12 pt-20 pb-16 md:pt-28 md:pb-20 lg:pt-32 lg:pb-20 flex items-center justify-center">
+      <section className="relative px-6 md:px-12 pt-32 pb-16 md:pt-40 md:pb-20 lg:pt-48 lg:pb-20 flex items-center justify-center">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
 
         <div className="max-w-5xl mx-auto w-full flex flex-col items-center">
