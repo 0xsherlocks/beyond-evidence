@@ -10,7 +10,7 @@ export default defineConfig({
   name: 'beyond-evidence',
   title: 'Beyond Evidence',
 
-  projectId: 'tihvclm6',
+  projectId: 'zm4dl3vf',
   dataset: 'production',
   basePath: '/studio',
 

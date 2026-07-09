@@ -45,8 +45,8 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
   return (
     <>
       <header className={cn(
-        'fixed top-0 inset-x-0 z-50 transition-all duration-500 border-b',
-        isScrolled ? 'bg-white/60 backdrop-blur-lg border-slate-200/50 py-3 shadow-sm' : 'bg-transparent border-transparent py-5'
+        'fixed top-0 inset-x-0 z-50 transition-all duration-500 border-b flex items-center',
+        isScrolled ? 'bg-white/90 backdrop-blur-lg border-slate-200/50 h-[60px] shadow-sm' : 'bg-transparent border-transparent h-[80px]'
       )}>
         <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group shrink-0">
