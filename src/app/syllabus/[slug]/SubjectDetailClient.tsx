@@ -135,9 +135,9 @@ export default function SubjectDetailClient({ subject }: { subject: SubjectData 
   return (
     <>
       {/* Push content below the fixed site header */}
-      <div className="pt-[72px] md:pt-[80px]" />
+      <div className="pt-[80px]" />
 
-      <div className="min-h-[calc(100vh-72px)] md:min-h-[calc(100vh-80px)] bg-slate-50 flex flex-col md:flex-row border-t border-slate-200 relative">
+      <div className="min-h-[calc(100vh-80px)] bg-slate-50 flex flex-col md:flex-row border-t border-slate-200 relative">
 
         {/* ─── MOBILE SIDEBAR OVERLAY ───────────────────────────── */}
         {sidebarOpen && (
@@ -149,11 +149,11 @@ export default function SubjectDetailClient({ subject }: { subject: SubjectData 
 
         {/* ─── SIDEBAR ─────────────────────────────────────────── */}
         <aside className={`
-          fixed md:sticky top-[72px] md:top-[80px] left-0 z-50 md:z-auto
+          fixed md:sticky top-[60px] left-0 z-50 md:z-auto
           w-[85vw] max-w-[360px] md:w-80 lg:w-96 
           bg-white border-r border-slate-200 
           flex flex-col 
-          h-[calc(100vh-72px)] md:h-[calc(100vh-80px)]
+          h-[calc(100vh-60px)]
           transition-transform duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
           shrink-0 overflow-hidden
@@ -215,9 +215,9 @@ export default function SubjectDetailClient({ subject }: { subject: SubjectData 
         </aside>
 
         {/* ─── MAIN CONTENT AREA ───────────────────────────────── */}
-        <main className="flex-1 flex flex-col min-h-[calc(100vh-72px)] md:min-h-[calc(100vh-80px)]">
+        <main className="flex-1 flex flex-col min-h-[calc(100vh-60px)]">
           {/* Content header with module title + mobile menu toggle */}
-          <header className="h-14 md:h-16 shrink-0 bg-white border-b border-slate-200 px-4 md:px-10 flex items-center justify-between shadow-sm sticky top-[72px] md:top-[80px] z-30">
+          <header className="h-14 md:h-16 shrink-0 bg-white border-b border-slate-200 px-4 md:px-10 flex items-center justify-between shadow-sm sticky top-[60px] z-30">
             <div className="flex items-center gap-3 min-w-0">
               {/* Mobile sidebar toggle */}
               <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 -ml-1 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors">
