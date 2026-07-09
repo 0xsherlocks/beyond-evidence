@@ -9,7 +9,7 @@
  *   $env:SANITY_API_TOKEN="your_token"; node scripts/seed.mjs
  */
 
-const PROJECT_ID = 'tihvclm6';
+const PROJECT_ID = 'zm4dl3vf';
 const DATASET = 'production';
 const API_VERSION = '2024-01-01';
 const TOKEN = process.env.SANITY_API_TOKEN;
