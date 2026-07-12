@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, Database, X } from 'lucide-react';
+import { Menu, Database, X, LogIn } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useState, useEffect } from 'react';
 import Logo from '../Logo';
+import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
+import { useAuth } from '@clerk/nextjs';
 
 interface NavLink {
   label: string;
@@ -28,6 +30,7 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isSignedIn } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -72,13 +75,31 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
             </nav>
 
             {/* Actions */}
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
               {/* Studio CMS — only visible when NEXT_PUBLIC_SHOW_STUDIO=true */}
               {SHOW_STUDIO && (
                 <Link href="/studio" className="hidden lg:flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-accent transition-colors whitespace-nowrap">
                   <Database className="w-4 h-4" />
                   Studio CMS
                 </Link>
+              )}
+              {/* Auth buttons */}
+              {isSignedIn ? (
+                <UserButton
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: 'w-8 h-8',
+                    },
+                  }}
+                />
+              ) : (
+                <SignInButton mode="modal">
+                  <button className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent text-white text-[11px] font-bold uppercase tracking-[0.15em] hover:bg-[#6d28d9] transition-all shadow-sm">
+                    <LogIn className="w-3.5 h-3.5" />
+                    Sign In
+                  </button>
+                </SignInButton>
               )}
               {/* Mobile menu toggle */}
               <button 
@@ -119,6 +140,27 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
                 <Database className="w-4 h-4" />
                 Studio CMS
               </Link>
+            )}
+            {/* Mobile Auth */}
+            {!isSignedIn && (
+              <div className="flex gap-3 mt-6 pt-6 border-t border-slate-100">
+                <SignInButton mode="modal">
+                  <button className="flex-1 py-3 rounded-xl bg-accent text-white font-bold text-sm hover:bg-[#6d28d9] transition-all">
+                    Sign In
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <button className="flex-1 py-3 rounded-xl border-2 border-accent text-accent font-bold text-sm hover:bg-accent/5 transition-all">
+                    Sign Up
+                  </button>
+                </SignUpButton>
+              </div>
+            )}
+            {isSignedIn && (
+              <div className="flex items-center gap-3 mt-6 pt-6 border-t border-slate-100">
+                <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: 'w-10 h-10' } }} />
+                <span className="text-sm font-bold text-slate-700">My Account</span>
+              </div>
             )}
           </nav>
         </div>

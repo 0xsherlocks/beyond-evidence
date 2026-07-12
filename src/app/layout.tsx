@@ -5,6 +5,7 @@ import SiteHeader from "@/src/components/layout/SiteHeader";
 import Link from "next/link";
 import Logo from "@/src/components/Logo";
 import { getNavigation } from "@/src/sanity/queries";
+import { ClerkProvider } from "@clerk/nextjs";
 
 // Force dynamic rendering so navigation always reflects latest Sanity data
 export const dynamic = 'force-dynamic';
@@ -105,6 +106,7 @@ export default async function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className={`${sora.variable} ${spaceGrotesk.variable} antialiased min-h-screen flex flex-col bg-transparent text-foreground`} suppressHydrationWarning>
+        <ClerkProvider>
         <SiteHeader headerLinks={headerLinks} />
         <main className="flex-1">
           {children}
@@ -167,6 +169,7 @@ export default async function RootLayout({
             </div>
           </div>
         </footer>
+        </ClerkProvider>
       </body>
     </html>
   );
