@@ -35,6 +35,7 @@ const DEFAULT_HEADER_LINKS = [
   { label: 'Quiz', href: '/quiz' },
   { label: 'Competitive Exams', href: '/study-material' },
   { label: 'Contact', href: '/contact' },
+  { label: 'Notification', href: '/notification' },
 ];
 
 const DEFAULT_FOOTER_LINKS = [
@@ -133,7 +134,6 @@ export default async function RootLayout({
                   <Link href="/quiz" className="text-sm text-slate-500 hover:text-accent transition-colors">Mock Tests & Quizzes</Link>
                   <Link href="/study-material" className="text-sm text-slate-500 hover:text-accent transition-colors">Competitive Exams</Link>
                   <Link href="/research" className="text-sm text-slate-500 hover:text-accent transition-colors">Research Papers</Link>
-                  <Link href="/notification" className="text-sm text-slate-500 hover:text-accent transition-colors">Notification</Link>
                 </div>
 
                 {/* Column 3: Career */}
