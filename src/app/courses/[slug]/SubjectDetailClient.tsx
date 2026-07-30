@@ -117,9 +117,9 @@ export default function SubjectDetailClient({ subject }: { subject: SubjectData 
         <p className="text-slate-500 max-w-md mx-auto mb-8">
           Course materials for {subject.name} are currently being updated.
         </p>
-        <Link href="/syllabus" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent text-white font-bold hover:bg-[#6d28d9] transition-all">
-          <ArrowLeft className="w-4 h-4" />
-          Back to Syllabus
+        <Link href="/courses" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent text-white font-bold hover:bg-[#6d28d9] transition-all">
+          <ArrowLeft className="w-5 h-5" />
+          Back to Courses
         </Link>
       </div>
     );
@@ -161,8 +161,8 @@ export default function SubjectDetailClient({ subject }: { subject: SubjectData 
           {/* Sidebar header */}
           <div className="p-5 md:p-6 border-b border-slate-100 shrink-0 bg-slate-50">
             <div className="flex items-center justify-between mb-4">
-              <Link href="/syllabus" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-accent uppercase tracking-wider transition-colors">
-                <ArrowLeft className="w-3.5 h-3.5" /> Back
+              <Link href="/courses" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-accent uppercase tracking-wider transition-colors">
+                <ArrowLeft className="w-4 h-4" /> Back
               </Link>
               {/* Close button on mobile */}
               <button onClick={() => setSidebarOpen(false)} className="md:hidden p-1 text-slate-400 hover:text-slate-600">

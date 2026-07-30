@@ -16,9 +16,10 @@ interface NavLink {
 
 const DEFAULT_NAV_LINKS: NavLink[] = [
   { label: 'Home', href: '/' },
-  { label: 'Syllabus', href: '/syllabus' },
+  { label: 'Courses', href: '/courses' },
   { label: 'Research', href: '/research' },
   { label: 'Quiz', href: '/quiz' },
+  { label: 'Notification', href: '/notification' },
   { label: 'Study Material', href: '/study-material' },
   { label: 'Contact', href: '/contact' },
 ];
@@ -55,7 +56,7 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
           <Link href="/" className="flex items-center gap-2 group shrink-0">
             <Logo showIcon={!isScrolled} showSubtitle={false} />
           </Link>
-          
+
           {/* Navigation and Actions grouped on the right */}
           <div className="flex items-center gap-8 lg:gap-16">
             {/* Desktop navigation */}
@@ -102,7 +103,7 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
                 </SignInButton>
               )}
               {/* Mobile menu toggle */}
-              <button 
+              <button
                 className="md:hidden p-2 text-slate-900"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >

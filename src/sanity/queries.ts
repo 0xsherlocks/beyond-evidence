@@ -55,7 +55,7 @@ export async function getHomePage() {
   )
 }
 
-// ─── Subjects (Syllabus) ─────────────────────────────────────
+// ─── Subjects (Courses) ─────────────────────────────────────
 export async function getSubjects() {
   return sanityClient.fetch(
     `*[_type == "subject"] | order(order asc){

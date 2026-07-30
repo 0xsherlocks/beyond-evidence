@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 const DEFAULT_HEADER_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'Syllabus', href: '/syllabus' },
+  { label: 'Courses', href: '/courses' },
   { label: 'Research', href: '/research' },
   { label: 'Quiz', href: '/quiz' },
   { label: 'Competitive Exams', href: '/study-material' },
@@ -129,7 +129,7 @@ export default async function RootLayout({
               {/* Column 2: Study */}
               <div className="flex flex-col gap-3">
                 <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-900 mb-1">Study</h4>
-                <Link href="/syllabus" className="text-sm text-slate-500 hover:text-accent transition-colors">Syllabus</Link>
+                <Link href="/courses" className="text-sm text-slate-500 hover:text-accent transition-colors">Courses</Link>
                 <Link href="/quiz" className="text-sm text-slate-500 hover:text-accent transition-colors">Mock Tests & Quizzes</Link>
                 <Link href="/study-material" className="text-sm text-slate-500 hover:text-accent transition-colors">Competitive Exams</Link>
                 <Link href="/research" className="text-sm text-slate-500 hover:text-accent transition-colors">Research Papers</Link>

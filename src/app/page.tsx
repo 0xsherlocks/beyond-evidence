@@ -1,4 +1,4 @@
-import { getHomePage } from '@/src/sanity/queries';
+import { getHomePage, getNotifications } from '@/src/sanity/queries';
 import { getImageUrl } from '@/src/sanity/client';
 import HomePageClient from './HomePageClient';
 
@@ -13,15 +13,15 @@ const FALLBACK = {
   valueProps: [
     { title: "Live Job Alerts", description: "Get the latest updates on forensic vacancies, internships, and government exams delivered instantly.", iconName: "BellRing", imageUrl: "https://images.unsplash.com/photo-1590103254922-bb7971777d19?auto=format&fit=crop&q=80", link: "/notification" },
     { title: "Mock Tests", description: "Test your preparation with high-quality, exam-pattern question sets and detailed performance analytics.", iconName: "BookCheck", imageUrl: "https://images.unsplash.com/photo-1579154273874-9467262276cb?auto=format&fit=crop&q=80", link: "/quiz" },
-    { title: "UGC NET Focused", description: "Premium study material perfectly aligned with the latest NTA UGC NET syllabus for Forensic Science.", iconName: "Target", imageUrl: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80", link: "/study-material/ugc-net-jrf" },
+    { title: "UGC NET Focused", description: "Premium study material perfectly aligned with the latest NTA UGC NET courses for Forensic Science.", iconName: "Target", imageUrl: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80", link: "/study-material/ugc-net-jrf" },
   ],
   featuredTopicsEyebrow: 'Explore Subjects',
-  featuredTopicsTitle: 'Browse the Syllabus',
+  featuredTopicsTitle: 'Browse the Courses',
   featuredTopics: [
-    { name: 'Crime Scene Investigation', number: '01', imageUrl: 'https://images.unsplash.com/photo-1590486803833-ffc6f784520a?auto=format&fit=crop&q=80', link: '/syllabus' },
-    { name: 'DNA & Serology', number: '02', imageUrl: 'https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&q=80', link: '/syllabus' },
-    { name: 'Cyber Forensics', number: '03', imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80', link: '/syllabus' },
-    { name: 'Forensic Toxicology', number: '04', imageUrl: 'https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&q=80', link: '/syllabus' },
+    { name: 'Crime Scene Investigation', number: '01', imageUrl: 'https://images.unsplash.com/photo-1590486803833-ffc6f784520a?auto=format&fit=crop&q=80', link: '/courses' },
+    { name: 'DNA & Serology', number: '02', imageUrl: 'https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&q=80', link: '/courses' },
+    { name: 'Cyber Forensics', number: '03', imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80', link: '/courses' },
+    { name: 'Forensic Toxicology', number: '04', imageUrl: 'https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&q=80', link: '/courses' },
   ],
   bannerTitle: 'Start Your Preparation Today.',
   bannerDescription: 'Access premium study materials and take the first step towards your dream career in forensic science.',
@@ -34,8 +34,13 @@ const FALLBACK = {
 
 export default async function Home() {
   let data;
+  let latestNotification = null;
   try {
     data = await getHomePage();
+    const notifications = await getNotifications();
+    if (notifications && notifications.length > 0) {
+      latestNotification = notifications[0];
+    }
   } catch (e) {
     data = null;
   }
@@ -56,6 +61,7 @@ export default async function Home() {
 
   return (
     <HomePageClient
+      latestNotification={latestNotification}
       // Forcing the new professional text directly from code
       heroTitle={FALLBACK.heroTitle}
       heroTitleLine2={FALLBACK.heroTitleLine2}

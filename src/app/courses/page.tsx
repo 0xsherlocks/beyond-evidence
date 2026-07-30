@@ -1,6 +1,6 @@
 import { getSubjects } from '@/src/sanity/queries';
 import { getImageUrl } from '@/src/sanity/client';
-import SyllabusClient from './SyllabusClient';
+import CoursesClient from './CoursesClient';
 
 const FALLBACK_SUBJECTS = [
   { _id: '1', name: 'General Forensics', slug: 'general-forensics', moduleCount: 0, description: 'Core principles and methodologies in forensic science.' },
@@ -22,7 +22,7 @@ const FALLBACK_SUBJECTS = [
   { _id: '17', name: 'Wildlife Forensic', slug: 'wildlife-forensic', moduleCount: 0, description: 'Wildlife crime investigation, species identification, and poaching forensics.' },
 ];
 
-export default async function SyllabusPage() {
+export default async function CoursesPage() {
   let subjects;
   try {
     subjects = await getSubjects();
@@ -35,5 +35,5 @@ export default async function SyllabusPage() {
     resolvedImage: getImageUrl(s, s.imageUrl),
   }));
 
-  return <SyllabusClient subjects={resolvedSubjects} />;
+  return <CoursesClient subjects={resolvedSubjects} />;
 }

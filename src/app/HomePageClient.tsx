@@ -164,7 +164,8 @@ function TopicCard({ topic, index }: { topic: any, index: number }) {
       className="h-[300px] md:h-[360px]"
     >
       <motion.a 
-        href={topic.link || '/syllabus'}
+        key={topic.name || index}
+        href={topic.link || '/courses'}
         ref={ref}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -216,6 +217,7 @@ interface HomePageClientProps {
   bannerCta1Link: string;
   bannerCta2Text: string;
   bannerCta2Link: string;
+  latestNotification?: any;
 }
 
 export default function HomePageClient(props: HomePageClientProps) {
@@ -303,6 +305,27 @@ export default function HomePageClient(props: HomePageClientProps) {
             animate="visible"
             variants={containerVariants}
           >
+            {props.latestNotification && (
+              <motion.div variants={itemVariants} className="mb-8">
+                <Link 
+                  href={props.latestNotification.link || (props.latestNotification.fileUrl ? props.latestNotification.fileUrl : '/notification')}
+                  className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 hover:bg-accent/20 hover:border-accent/30 transition-all duration-300 group shadow-sm"
+                >
+                  {props.latestNotification.isNew && (
+                    <span className="flex h-2.5 w-2.5 relative">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent"></span>
+                    </span>
+                  )}
+                  <span className="text-sm font-medium text-accent">
+                    <span className="font-bold mr-1">Update:</span> 
+                    {props.latestNotification.title}
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-accent group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </motion.div>
+            )}
+
             <motion.h1
               variants={itemVariants}
               className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold font-display tracking-tight text-slate-900 leading-[0.95] mb-6"
@@ -323,8 +346,8 @@ export default function HomePageClient(props: HomePageClientProps) {
               variants={itemVariants}
               className="flex flex-col sm:flex-row items-center justify-center gap-8"
             >
-              <Link href="/syllabus" className="pill-button bg-accent text-white hover:bg-[#6d28d9] flex items-center gap-3 shadow-lg shadow-accent/20 transition-all hover:-translate-y-1">
-                Explore Library <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              <Link href="/courses" className="pill-button bg-accent text-white hover:bg-[#6d28d9] flex items-center gap-3 shadow-lg shadow-accent/20 transition-all hover:-translate-y-1">
+                Explore Courses <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link href="/research" className="text-sm font-bold uppercase tracking-[0.3em] text-slate-600 hover:text-accent transition-colors">
                 Research Desk
@@ -378,8 +401,9 @@ export default function HomePageClient(props: HomePageClientProps) {
               <span className="eyebrow">{props.featuredTopicsEyebrow}</span>
               <h2 className="text-4xl md:text-5xl font-display font-bold mt-4 text-slate-900 tracking-tighter">{props.featuredTopicsTitle}</h2>
             </motion.div>
-            <Link href="/syllabus" className="pill-button border border-slate-200 text-slate-900 hover:bg-slate-50 flex items-center gap-2 group transition-all hover:-translate-y-1">
-              Browse Directory <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <Link href="/courses" className="pill-button border border-slate-200 text-slate-900 hover:bg-slate-50 flex items-center gap-2 group transition-all hover:-translate-y-1">
+              <span>View All Courses</span>
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-900 group-hover:translate-x-1 transition-all" />
             </Link>
           </div>
 

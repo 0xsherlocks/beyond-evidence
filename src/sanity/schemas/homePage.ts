@@ -52,7 +52,7 @@ export const homePage = defineType({
       initialValue: [
         { title: 'Live Job Alerts', description: 'Get the latest updates on forensic vacancies, internships, and government exams delivered instantly.', iconName: 'BellRing', link: '/notification' },
         { title: 'Mock Tests', description: 'Test your preparation with high-quality, exam-pattern question sets and detailed performance analytics.', iconName: 'BookCheck', link: '/quiz' },
-        { title: 'UGC NET Focused', description: 'Premium study material perfectly aligned with the latest NTA UGC NET syllabus for Forensic Science.', iconName: 'Target', link: '/study-material/ugc-net-jrf' },
+        { title: 'UGC NET Focused', description: 'Premium study material perfectly aligned with the latest NTA UGC NET courses for Forensic Science.', iconName: 'Target', link: '/study-material/ugc-net-jrf' },
       ],
       of: [
         {
@@ -83,7 +83,7 @@ export const homePage = defineType({
       name: 'featuredTopicsTitle',
       title: 'Featured Topics Title',
       type: 'string',
-      initialValue: 'Browse the Syllabus',
+      initialValue: 'Browse the Courses',
     }),
     defineField({
       name: 'featuredTopics',
@@ -97,7 +97,7 @@ export const homePage = defineType({
             defineField({ name: 'number', title: 'Display Number', type: 'string', description: 'e.g. 01, 02' }),
             defineField({ name: 'image', title: 'Background Image', type: 'image', options: { hotspot: true } }),
             defineField({ name: 'imageUrl', title: 'Image URL (external)', type: 'url' }),
-            defineField({ name: 'link', title: 'Link', type: 'string', initialValue: '/syllabus' }),
+            defineField({ name: 'link', title: 'Link', type: 'string', initialValue: '/courses' }),
           ],
           preview: {
             select: { title: 'name', subtitle: 'number' },

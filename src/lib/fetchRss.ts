@@ -32,7 +32,7 @@ function getSourceFromUrl(url: string, rawSource?: string, customSourceName?: st
 function categorizeItem(title: string): FeedItem['category'] {
   const t = title.toLowerCase();
   if (t.includes('intern') || t.includes('internship')) return 'Internship';
-  if (t.includes('exam') || t.includes('admit card') || t.includes('result') || t.includes('syllabus')) return 'Exam';
+  if (t.includes('exam') || t.includes('admit card') || t.includes('result') || t.includes('courses')) return 'Exam';
   if (t.includes('scholarship') || t.includes('fellowship')) return 'Scholarship';
   if (t.includes('workshop') || t.includes('seminar') || t.includes('conference')) return 'Workshop';
   if (t.includes('job') || t.includes('recruitment') || t.includes('vacancy') || t.includes('post') || t.includes('hiring')) return 'Job';
