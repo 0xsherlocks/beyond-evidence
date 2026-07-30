@@ -5,19 +5,19 @@ import { notFound } from 'next/navigation';
 const FALLBACK_DATA: Record<string, any> = {
   'ugc-net-jrf': {
     title: 'UGC NET JRF – Forensic Science Study Material',
-    description: 'Complete notes for all 10 units and a mock test series curated as per the latest UGC NET/JRF syllabus.',
+    description: 'Complete notes for all 10 units and a mock test series curated as per the latest UGC NET/JRF courses.',
     introParagraphs: [
       'Dear Student,',
       'Greetings! Thank you for showing interest in the UGC NET JRF – Forensic Science study material.',
-      'To support your preparation, I have curated high-quality, updated, and exam-focused study resources designed as per the latest NET/JRF syllabus. These materials are built to help you revise efficiently and perform confidently on exam day.'
+      'To support your preparation, I have curated high-quality, updated, and exam-focused study resources designed as per the latest NET/JRF courses. These materials are built to help you revise efficiently and perform confidently on exam day.'
     ],
     features: [
-      { title: 'Complete Notes — All 10 Units', description: 'Clear, structured, and exam-focused notes covering every topic in the syllabus.', iconName: 'BookOpen' },
+      { title: 'Complete Notes — All 10 Units', description: 'Clear, structured, and exam-focused notes covering every topic in the courses.', iconName: 'BookOpen' },
       { title: 'Mock Test Series', description: 'Practice tests designed to strengthen your concepts, improve speed, and boost accuracy before the exam.', iconName: 'ClipboardList' },
       { title: 'Digital PDF Format', description: 'Instantly downloadable PDFs for easy reading on any device, anytime — perfect for quick revision.', iconName: 'FileText' },
     ],
     packages: [
-      { id: 'notes', title: 'Notes Only', subtitle: 'All 10 Units', price: '₹999', featuresList: ['Complete Notes — All 10 Units', 'Structured & Easy-to-Revise Format', 'PDF Digital Download', 'Latest NET/JRF Syllabus Aligned'] },
+      { id: 'notes', title: 'Notes Only', subtitle: 'All 10 Units', price: '₹999', featuresList: ['Complete Notes — All 10 Units', 'Structured & Easy-to-Revise Format', 'PDF Digital Download', 'Latest NET/JRF Courses Aligned'] },
       { id: 'mock', title: 'Mock Tests Only', subtitle: 'Full Test Series', price: '₹666', featuresList: ['Mock Test Series', 'Concept Strengthening Questions', 'Answer Keys Included', 'Exam-Pattern Based'] },
       { id: 'combo', title: 'Combo Pack', subtitle: 'Notes + Mock Tests', price: '₹1499', badge: 'BEST VALUE', featuresList: ['Complete Notes — All 10 Units', 'Full Mock Test Series', 'PDF Digital Downloads', 'Priority Support'] },
     ]
@@ -28,7 +28,7 @@ const FALLBACK_DATA: Record<string, any> = {
     introParagraphs: [
       'Dear Student,',
       'Welcome to the FACT & FACT Plus preparation course.',
-      'This material is designed to cover the exact syllabus and pattern of the Forensic Aptitude and Caliber Test, ensuring you are fully prepared for both basic and advanced levels.'
+      'This material is designed to cover the exact courses and pattern of the Forensic Aptitude and Caliber Test, ensuring you are fully prepared for both basic and advanced levels.'
     ],
     features: [
       { title: 'Targeted Notes', description: 'Notes specific to FACT & FACT Plus requirements.', iconName: 'BookOpen' },
@@ -67,11 +67,11 @@ const FALLBACK_DATA: Record<string, any> = {
       'This material is specially curated to help you crack the Common University Entrance Test for both Undergraduate and Postgraduate forensic science programs.'
     ],
     features: [
-      { title: 'Syllabus-Aligned Notes', description: 'Notes perfectly aligned with the latest CUET syllabus.', iconName: 'BookOpen' },
-      { title: 'Practice Mocks', description: 'Exam-oriented practice questions to boost your speed and accuracy.', iconName: 'ClipboardList' },
+      { title: 'Courses-Aligned Notes', description: 'Notes perfectly aligned with the latest CUET courses.', iconName: 'BookOpen' },
+      { title: 'Topic-wise Mocks', description: 'Practice with standard MCQs covering the entire PG curriculum.', iconName: 'Target' }
     ],
     packages: [
-      { id: 'full', title: 'Complete Course', subtitle: 'Notes + Mocks', price: '₹999', badge: 'BEST VALUE', featuresList: ['Syllabus-Aligned Notes', 'Practice Mock Tests', 'Digital PDF Format'] }
+      { id: 'full', title: 'Complete Course', subtitle: 'Notes + Mocks', price: '₹999', badge: 'BEST VALUE', featuresList: ['Courses-Aligned Notes', 'Practice Mock Tests', 'Digital PDF Format'] }
     ]
   }
 };

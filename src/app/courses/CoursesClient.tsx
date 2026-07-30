@@ -32,7 +32,7 @@ interface SubjectItem {
   moduleCount: number;
 }
 
-export default function SyllabusClient({ subjects }: { subjects: SubjectItem[] }) {
+export default function CoursesClient({ subjects }: { subjects: SubjectItem[] }) {
   const [searchQuery, setSearchQuery] = useState('');
   const q = searchQuery.toLowerCase().trim();
 
@@ -44,8 +44,8 @@ export default function SyllabusClient({ subjects }: { subjects: SubjectItem[] }
     <div className="min-h-screen pb-24">
       <PageHero
         eyebrow="Academic Curriculum"
-        title="Syllabus"
-        description="Browse the complete forensic science curriculum. Select a subject to access lecture slides, notes, and study resources."
+        title="Courses"
+        description="Explore our comprehensive curriculum designed to build your expertise from fundamentals to advanced concepts."
       />
 
       {/* Search bar */}
@@ -54,7 +54,7 @@ export default function SyllabusClient({ subjects }: { subjects: SubjectItem[] }
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input
             type="text"
-            placeholder="Search subjects…"
+            placeholder="Search courses…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 pr-12 py-3.5 rounded-2xl border border-slate-200 bg-white/70 backdrop-blur-sm text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all shadow-sm"
@@ -67,7 +67,7 @@ export default function SyllabusClient({ subjects }: { subjects: SubjectItem[] }
         </div>
         {q && (
           <p className="text-center text-sm text-slate-400 font-light mt-3">
-            {filtered.length === 0 ? 'No subjects found' : `${filtered.length} subject${filtered.length !== 1 ? 's' : ''} found`}
+            {filtered.length === 0 ? 'No courses found' : `${filtered.length} course${filtered.length !== 1 ? 's' : ''} found`}
           </p>
         )}
       </div>
@@ -79,7 +79,7 @@ export default function SyllabusClient({ subjects }: { subjects: SubjectItem[] }
         animate="visible"
       >
         {filtered.map((subject, i) => (
-          <Link href={`/syllabus/${subject.slug || subject._id}`} key={subject._id || i}>
+          <Link href={`/courses/${subject.slug || subject._id}`} key={subject._id || i}>
             <motion.div
               variants={cardVariants}
               className="card-panel group cursor-pointer flex flex-col p-0 h-[340px] hover:shadow-xl hover:-translate-y-1 transition-all duration-500"

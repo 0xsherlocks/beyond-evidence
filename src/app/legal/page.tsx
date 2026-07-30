@@ -19,7 +19,7 @@ const FALLBACK = {
     },
     {
       heading: 'Disclaimer of Affiliation',
-      contentSimple: 'Beyond Evidence is an independent educational platform. We are not officially affiliated with, endorsed by, or connected to the National Testing Agency (NTA), the University Grants Commission (UGC), or any other government body or examination authority. While we strive to align our materials with the latest syllabus (e.g., UGC NET), our content is meant for supplementary preparation and we do not guarantee exam results.',
+      contentSimple: 'Beyond Evidence is an independent educational platform. We are not officially affiliated with, endorsed by, or connected to the National Testing Agency (NTA), the University Grants Commission (UGC), or any other government body or examination authority. While we strive to align our materials with the latest courses (e.g., UGC NET), our content is meant for supplementary preparation and we do not guarantee exam results.',
     },
     {
       heading: 'General Disclaimer',
