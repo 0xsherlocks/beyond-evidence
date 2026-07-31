@@ -43,21 +43,32 @@ export default function StudyMaterialListClient({ materials }: { materials: Stud
       />
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-12">
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {materials.map((material) => {
-            const Icon = IconMap[material.iconName || 'BookOpen'] || BookOpen;
+        {materials.length === 0 ? (
+          <div className="card-panel mx-auto max-w-2xl p-8 text-center">
+            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-accent/20 bg-accent/10 text-accent">
+              <BookOpen className="h-6 w-6" />
+            </div>
+            <h2 className="font-display text-2xl font-bold text-slate-900">No exam packages found</h2>
+            <p className="mx-auto mt-3 max-w-md text-sm font-light leading-relaxed text-slate-500">
+              Add and publish Study Material documents in Sanity Studio, then refresh this page.
+            </p>
+          </div>
+        ) : (
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {materials.map((material) => {
+              const Icon = IconMap[material.iconName || 'BookOpen'] || BookOpen;
 
-            return (
-              <Link key={material._id} href={`/study-material/${material.slug}`}>
-                <motion.div
-                  variants={cardVariants}
-                  className="card-panel group flex flex-col overflow-hidden h-full hover:-translate-y-1 transition-all duration-300"
-                >
+              return (
+                <Link key={material._id} href={`/study-material/${material.slug}`}>
+                  <motion.div
+                    variants={cardVariants}
+                    className="card-panel group flex flex-col overflow-hidden h-full hover:-translate-y-1 transition-all duration-300"
+                  >
                 {material.imageUrl && (
                   <div className="aspect-[16/9] overflow-hidden bg-slate-100">
                     <img
@@ -83,9 +94,10 @@ export default function StudyMaterialListClient({ materials }: { materials: Stud
                 </div>
                 </motion.div>
               </Link>
-            );
-          })}
-        </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
       </div>
     </div>
   );

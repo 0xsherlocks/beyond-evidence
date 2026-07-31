@@ -2,6 +2,9 @@ import { getStudyMaterialBySlug, getContactPage } from '@/src/sanity/queries';
 import StudyMaterialDetailClient from './StudyMaterialDetailClient';
 import { notFound } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function StudyMaterialDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const material = await getStudyMaterialBySlug(slug);
