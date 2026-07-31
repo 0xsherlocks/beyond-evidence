@@ -3,14 +3,25 @@
 import Link from 'next/link';
 import PageHero from '@/src/components/PageHero';
 import { motion } from 'framer-motion';
-import { BookOpen, ArrowRight } from 'lucide-react';
+import { BookOpen, ClipboardList, FileText, Target, Sparkles, BadgeIndianRupee, ArrowRight } from 'lucide-react';
 
 interface StudyMaterialItem {
   _id: string;
   title: string;
   slug: string;
   description: string;
+  iconName?: string;
+  imageUrl?: string;
 }
+
+const IconMap: Record<string, any> = {
+  BookOpen,
+  ClipboardList,
+  FileText,
+  Target,
+  Sparkles,
+  BadgeIndianRupee,
+};
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -38,14 +49,27 @@ export default function StudyMaterialListClient({ materials }: { materials: Stud
           initial="hidden"
           animate="visible"
         >
-          {materials.map((material) => (
-            <Link key={material._id} href={`/study-material/${material.slug}`}>
-              <motion.div
-                variants={cardVariants}
-                className="card-panel group flex flex-col p-8 h-full hover:-translate-y-1 transition-all duration-300"
-              >
+          {materials.map((material) => {
+            const Icon = IconMap[material.iconName || 'BookOpen'] || BookOpen;
+
+            return (
+              <Link key={material._id} href={`/study-material/${material.slug}`}>
+                <motion.div
+                  variants={cardVariants}
+                  className="card-panel group flex flex-col overflow-hidden h-full hover:-translate-y-1 transition-all duration-300"
+                >
+                {material.imageUrl && (
+                  <div className="aspect-[16/9] overflow-hidden bg-slate-100">
+                    <img
+                      src={material.imageUrl}
+                      alt=""
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                )}
+                <div className="flex flex-1 flex-col p-8">
                 <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent mb-6 group-hover:bg-accent group-hover:text-white transition-colors duration-300">
-                  <BookOpen className="w-6 h-6" />
+                  <Icon className="w-6 h-6" />
                 </div>
                 <h2 className="font-display font-bold text-xl text-slate-900 mb-3 group-hover:text-accent transition-colors">
                   {material.title}
@@ -56,9 +80,11 @@ export default function StudyMaterialListClient({ materials }: { materials: Stud
                 <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-accent transition-colors">
                   View Package <ArrowRight className="w-4 h-4" />
                 </div>
-              </motion.div>
-            </Link>
-          ))}
+                </div>
+                </motion.div>
+              </Link>
+            );
+          })}
         </motion.div>
       </div>
     </div>
