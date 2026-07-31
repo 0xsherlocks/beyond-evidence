@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Purchase {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String
+  courseName  String
+  packageId   String
+  packageName String
+  amount      Int
+  paymentId   String?  @unique
+  orderId     String   @unique
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+}

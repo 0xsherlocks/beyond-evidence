@@ -1,106 +1,264 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import PageHero from '@/src/components/PageHero';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useClerk, useUser } from '@clerk/nextjs';
+import { AnimatePresence, motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import {
-  CheckCircle2, BookOpen, ClipboardList, FileText,
-  BadgeIndianRupee, Sparkles, ArrowRight, Send, User,
-  Mail, Phone, Package, AlertCircle, ChevronDown, ArrowLeft
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  BadgeIndianRupee,
+  BookOpen,
+  CheckCircle2,
+  ChevronDown,
+  ClipboardList,
+  Download,
+  FileText,
+  Mail,
+  Package,
+  Phone,
+  Send,
+  Sparkles,
+  Target,
+  User,
 } from 'lucide-react';
+import PageHero from '@/src/components/PageHero';
 import { cn } from '@/src/lib/utils';
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' as const } },
 };
-const stagger = {
+
+const stagger: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.12 } },
 };
 
-// Map string icon names to actual Lucide components
 const IconMap: Record<string, any> = {
+  BadgeIndianRupee,
   BookOpen,
   ClipboardList,
   FileText,
   Sparkles,
+  Target,
 };
 
 type FormStatus = 'idle' | 'submitting' | 'success' | 'error';
 
-export default function StudyMaterialDetailClient({ material, contactInfo }: { material: any, contactInfo?: { email: string, phone: string } }) {
-  const defaultPackageId = material.packages && material.packages.length > 0 ? material.packages[material.packages.length - 1].id : '';
+type PaidAccess = {
+  hasAccess: boolean;
+  courseName?: string;
+  packageName?: string;
+  downloadLinks?: Array<{ title?: string; url?: string }>;
+};
+
+function loadRazorpayScript() {
+  return new Promise<boolean>((resolve) => {
+    if ((window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
+export default function StudyMaterialDetailClient({
+  material,
+}: {
+  material: any;
+  contactInfo?: { email: string; phone: string };
+}) {
+  const { user, isLoaded, isSignedIn } = useUser();
+  const { redirectToSignIn } = useClerk();
+  const packages = material.packages || [];
+  const defaultPackageId = packages.length > 0 ? packages[packages.length - 1].id : '';
   const [selectedPackage, setSelectedPackage] = useState<string>(defaultPackageId);
   const [status, setStatus] = useState<FormStatus>('idle');
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', package: defaultPackageId });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    package: defaultPackageId,
+  });
+  const [errorMessage, setErrorMessage] = useState('');
+  const [paidAccess, setPaidAccess] = useState<PaidAccess | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (name === 'package') setSelectedPackage(value);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus('submitting');
-    
-    // Simulate brief loading
-    await new Promise(r => setTimeout(r, 600));
-    setStatus('success');
-  };
-
-  const getMessageContent = () => {
-    const selectedPkg = material.packages?.find((p: any) => p.id === formData.package);
-    return `Hello Beyond Evidence Team,
-
-I am writing to express my interest in enrolling in your study material program. Please find my registration details below:
-
-📘 Course Details:
-• Subject: ${material.title}
-• Package: ${selectedPkg?.title || 'Selected Package'} (${selectedPkg?.price || 'N/A'})
-
-👤 Student Information:
-• Full Name: ${formData.name}
-• Email Address: ${formData.email}
-• WhatsApp Number: ${formData.phone}
-
-Kindly let me know the next steps for payment and how I can access the study materials.
-
-Looking forward to your response.
-
-Best regards,
-${formData.name}`;
-  };
-
-  const handleEmailRedirect = () => {
-    const subject = encodeURIComponent(`${material.title} Registration – ${formData.package.toUpperCase()} – ${formData.name}`);
-    const body = encodeURIComponent(getMessageContent());
-    window.open(`mailto:${contactInfo?.email || 'gboy90raj@gmail.com'}?subject=${subject}&body=${body}`);
-  };
-
-  const handleWhatsAppRedirect = () => {
-    const body = encodeURIComponent(getMessageContent());
-    const phone = contactInfo?.phone || '8429492976';
-    // Remove any non-numeric characters from phone
-    const cleanPhone = phone.replace(/\D/g, '');
-    window.open(`https://wa.me/91${cleanPhone.slice(-10)}?text=${body}`, '_blank');
-  };
-
-  const selectedPkg = material.packages?.find((p: any) => p.id === selectedPackage);
+  const selectedPkg = packages.find((pkg: any) => pkg.id === selectedPackage);
   const introParagraphs = material.introParagraphs || [];
   const features = material.features || [];
-  const packages = material.packages || [];
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !user) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      name: prev.name || user.fullName || '',
+      email: prev.email || user.primaryEmailAddress?.emailAddress || '',
+    }));
+  }, [isLoaded, isSignedIn, user]);
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !selectedPackage || !material.slug) return;
+
+    let cancelled = false;
+
+    async function checkPaidAccess() {
+      try {
+        const response = await fetch(
+          `/api/study-material-access?slug=${encodeURIComponent(material.slug)}&packageId=${encodeURIComponent(selectedPackage)}`,
+          { cache: 'no-store' }
+        );
+
+        if (!response.ok) return;
+
+        const access = await response.json();
+
+        if (!cancelled && access.hasAccess) {
+          setPaidAccess(access);
+          setStatus('success');
+        }
+      } catch (error) {
+        // Checkout still performs full server-side checks; this only restores access on revisit.
+      }
+    }
+
+    checkPaidAccess();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, isSignedIn, material.slug, selectedPackage]);
 
   const getColorClass = (index: number) => {
     const colors = [
       'from-violet-500 to-purple-600',
       'from-sky-500 to-blue-600',
       'from-accent to-violet-700',
-      'from-emerald-500 to-teal-600'
+      'from-emerald-500 to-teal-600',
     ];
     return colors[index % colors.length];
+  };
+
+  const handlePackageSelect = (packageId: string) => {
+    setSelectedPackage(packageId);
+    setFormData((prev) => ({ ...prev, package: packageId }));
+    setPaidAccess(null);
+    setStatus('idle');
+    setErrorMessage('');
+    document.getElementById('register-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === 'package') {
+      handlePackageSelect(value);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!isLoaded) return;
+
+    if (!isSignedIn) {
+      await redirectToSignIn({ redirectUrl: window.location.href } as any);
+      return;
+    }
+
+    setStatus('submitting');
+    setErrorMessage('');
+
+    try {
+      const scriptLoaded = await loadRazorpayScript();
+
+      if (!scriptLoaded) {
+        throw new Error('Unable to load Razorpay checkout. Please check your connection and try again.');
+      }
+
+      const orderResponse = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: material.slug,
+          packageId: formData.package,
+        }),
+      });
+
+      if (orderResponse.status === 401) {
+        await redirectToSignIn({ redirectUrl: window.location.href } as any);
+        return;
+      }
+
+      const orderData = await orderResponse.json();
+
+      if (!orderResponse.ok) {
+        throw new Error(orderData?.error || 'Unable to create payment order.');
+      }
+
+      const paymentResult: any = await new Promise((resolve, reject) => {
+        const razorpay = new (window as any).Razorpay({
+          key: orderData.keyId,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          name: 'Beyond Evidence',
+          description: `${orderData.courseName} - ${orderData.packageName}`,
+          order_id: orderData.orderId,
+          prefill: {
+            name: formData.name || user?.fullName || '',
+            email: formData.email || user?.primaryEmailAddress?.emailAddress || '',
+            contact: formData.phone,
+          },
+          theme: { color: '#7c3aed' },
+          handler: resolve,
+          modal: {
+            ondismiss: () => reject(new Error('Payment was cancelled.')),
+          },
+        });
+
+        razorpay.on('payment.failed', (response: any) => {
+          reject(new Error(response?.error?.description || 'Payment failed.'));
+        });
+
+        razorpay.open();
+      });
+
+      const verifyResponse = await fetch('/api/verify-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paymentResult),
+      });
+      const verifyData = await verifyResponse.json();
+
+      if (!verifyResponse.ok) {
+        throw new Error(verifyData?.error || 'Payment verification failed.');
+      }
+
+      const accessResponse = await fetch(
+        `/api/study-material-access?slug=${encodeURIComponent(verifyData.courseId)}&packageId=${encodeURIComponent(verifyData.packageId)}`,
+        { cache: 'no-store' }
+      );
+      const accessData = await accessResponse.json();
+
+      if (!accessResponse.ok || !accessData.hasAccess) {
+        throw new Error('Payment succeeded, but access could not be confirmed. Please refresh and try again.');
+      }
+
+      setPaidAccess(accessData);
+      setStatus('success');
+    } catch (error: any) {
+      setErrorMessage(error?.message || 'Payment could not be completed. Please try again.');
+      setStatus('error');
+    }
   };
 
   return (
@@ -109,9 +267,9 @@ ${formData.name}`;
         eyebrow="Study Material"
         title={material.title}
         description={material.description}
+        imageUrl={material.imageUrl}
       />
 
-      {/* ─── INTRO LETTER ─────────────────────────────────────── */}
       {introParagraphs.length > 0 && (
         <section className="max-w-4xl mx-auto px-6 md:px-12 pt-12">
           <Link href="/study-material" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-accent transition-colors mb-8 group">
@@ -120,7 +278,9 @@ ${formData.name}`;
           </Link>
 
           <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
             variants={fadeUp}
             className="card-panel p-8 md:p-12 rounded-3xl border-l-4 border-l-accent"
           >
@@ -130,12 +290,11 @@ ${formData.name}`;
                 {para}
               </p>
             ))}
-            <p className="mt-6 font-bold text-accent text-sm tracking-wider uppercase">— Beyond Evidence</p>
+            <p className="mt-6 font-bold text-accent text-sm tracking-wider uppercase">Beyond Evidence</p>
           </motion.div>
         </section>
       )}
 
-      {/* ─── WHAT YOU GET ─────────────────────────────────────── */}
       {features.length > 0 && (
         <section className="max-w-4xl mx-auto px-6 md:px-12 py-16">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
@@ -148,11 +307,7 @@ ${formData.name}`;
               {features.map((item: any, i: number) => {
                 const Icon = IconMap[item.iconName] || BookOpen;
                 return (
-                  <motion.div
-                    key={i}
-                    variants={fadeUp}
-                    className="card-panel p-7 flex flex-col gap-4 group"
-                  >
+                  <motion.div key={i} variants={fadeUp} className="card-panel p-7 flex flex-col gap-4 group">
                     <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-white transition-all duration-500">
                       <Icon className="w-5 h-5" />
                     </div>
@@ -166,7 +321,6 @@ ${formData.name}`;
         </section>
       )}
 
-      {/* ─── PRICING ──────────────────────────────────────────── */}
       {packages.length > 0 && (
         <section className="max-w-4xl mx-auto px-6 md:px-12 pb-16">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
@@ -181,17 +335,14 @@ ${formData.name}`;
                 return (
                   <motion.button
                     key={pkg.id}
+                    type="button"
                     variants={fadeUp}
-                    onClick={() => {
-                      setSelectedPackage(pkg.id);
-                      setFormData(p => ({ ...p, package: pkg.id }));
-                      document.getElementById('register-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }}
+                    onClick={() => handlePackageSelect(pkg.id)}
                     className={cn(
-                      "relative rounded-3xl p-7 text-left flex flex-col gap-4 border-2 transition-all duration-500 group",
+                      'relative rounded-3xl p-7 text-left flex flex-col gap-4 border-2 transition-all duration-500 group',
                       selectedPackage === pkg.id
-                        ? "border-accent shadow-xl shadow-accent/20 scale-[1.02]"
-                        : "border-slate-100 bg-white hover:border-accent/30 hover:shadow-lg"
+                        ? 'border-accent shadow-xl shadow-accent/20 scale-[1.02]'
+                        : 'border-slate-100 bg-white hover:border-accent/30 hover:shadow-lg'
                     )}
                   >
                     {pkg.badge && (
@@ -199,53 +350,54 @@ ${formData.name}`;
                         {pkg.badge}
                       </span>
                     )}
-                    <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-white bg-gradient-to-br", colorClass)}>
+                    <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center text-white bg-gradient-to-br', colorClass)}>
                       <BadgeIndianRupee className="w-5 h-5" />
                     </div>
                     <div>
                       <p className="font-display font-bold text-slate-900 text-lg">{pkg.title}</p>
                       <p className="text-slate-400 text-sm font-light">{pkg.subtitle}</p>
                     </div>
-                    <p className={cn("text-3xl font-display font-bold bg-gradient-to-r bg-clip-text text-transparent", colorClass)}>
+                    <p className={cn('text-3xl font-display font-bold bg-gradient-to-r bg-clip-text text-transparent', colorClass)}>
                       {pkg.price}
                     </p>
                     {pkg.featuresList && pkg.featuresList.length > 0 && (
                       <ul className="space-y-2 border-t border-slate-100 pt-4">
-                        {pkg.featuresList.map((f: string, i: number) => (
+                        {pkg.featuresList.map((feature: string, i: number) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-slate-600 font-light">
                             <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                            {f}
+                            {feature}
                           </li>
                         ))}
                       </ul>
                     )}
-                    <span className={cn(
-                      "inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest mt-auto",
-                      selectedPackage === pkg.id ? "text-accent" : "text-slate-400 group-hover:text-accent transition-colors"
-                    )}>
-                      {selectedPackage === pkg.id ? "Selected ✓" : "Select Package"}
+                    <span
+                      className={cn(
+                        'inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest mt-auto',
+                        selectedPackage === pkg.id ? 'text-accent' : 'text-slate-400 group-hover:text-accent transition-colors'
+                      )}
+                    >
+                      {selectedPackage === pkg.id ? 'Selected' : 'Select Package'}
                       {selectedPackage !== pkg.id && <ArrowRight className="w-3 h-3" />}
                     </span>
                   </motion.button>
-                )
+                );
               })}
             </div>
           </motion.div>
         </section>
       )}
 
-      {/* ─── REGISTRATION FORM ────────────────────────────────── */}
       {packages.length > 0 && (
         <section id="register-form" className="max-w-2xl mx-auto px-6 md:px-12 pb-16 scroll-mt-28">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
             <div className="card-panel p-8 md:p-12">
               <div className="mb-8">
-                <span className="eyebrow block mb-2">Enroll Now</span>
-                <h2 className="text-3xl font-display font-bold text-slate-900 tracking-tight">Register to Get Started</h2>
+                <span className="eyebrow block mb-2">Secure Checkout</span>
+                <h2 className="text-3xl font-display font-bold text-slate-900 tracking-tight">Complete Your Purchase</h2>
                 {selectedPkg && (
                   <div className="mt-4 inline-flex items-center gap-3 px-4 py-2 rounded-full bg-accent/10 border border-accent/20">
                     <Package className="w-4 h-4 text-accent" />
-                    <span className="text-sm font-bold text-accent">{selectedPkg.title} — {selectedPkg.price}</span>
+                    <span className="text-sm font-bold text-accent">{selectedPkg.title} - {selectedPkg.price}</span>
                   </div>
                 )}
               </div>
@@ -262,29 +414,31 @@ ${formData.name}`;
                     <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
                       <CheckCircle2 className="w-10 h-10 text-green-500" />
                     </div>
-                    <h3 className="text-2xl font-display font-bold text-slate-900 mb-2">Choose Your Platform</h3>
+                    <h3 className="text-2xl font-display font-bold text-slate-900 mb-2">Payment Successful</h3>
                     <p className="text-slate-500 font-light text-sm leading-relaxed max-w-sm mx-auto mb-8">
-                      Send your registration details via Email or WhatsApp. We will reply with payment instructions.
+                      Your purchase is verified. Download links are shown below after checking your paid access.
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                      <button
-                        onClick={handleWhatsAppRedirect}
-                        className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-[#25D366] text-white font-bold text-sm uppercase tracking-widest hover:bg-[#128C7E] flex items-center justify-center gap-3 transition-all hover:shadow-lg hover:-translate-y-0.5"
-                      >
-                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                        WhatsApp
-                      </button>
-                      <button
-                        onClick={handleEmailRedirect}
-                        className="w-full sm:w-auto px-8 py-3.5 rounded-2xl border-2 border-slate-200 bg-white text-slate-700 font-bold text-sm uppercase tracking-widest hover:border-accent hover:text-accent flex items-center justify-center gap-3 transition-all hover:shadow-lg hover:-translate-y-0.5"
-                      >
-                        <Mail className="w-5 h-5" />
-                        Gmail / Email
-                      </button>
-                    </div>
-                    <button onClick={() => setStatus('idle')} className="mt-8 text-xs font-bold text-slate-400 hover:text-accent uppercase tracking-widest transition-colors">
-                      ← Go Back
-                    </button>
+
+                    {paidAccess?.downloadLinks && paidAccess.downloadLinks.length > 0 ? (
+                      <div className="space-y-3 text-left">
+                        {paidAccess.downloadLinks.map((link, index) => (
+                          <a
+                            key={`${link.url}-${index}`}
+                            href={link.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm font-bold text-slate-700 transition-all hover:border-accent hover:text-accent hover:shadow-lg"
+                          >
+                            <span>{link.title || `Download ${index + 1}`}</span>
+                            <Download className="w-4 h-4 shrink-0" />
+                          </a>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-500 font-light leading-relaxed">
+                        Payment is recorded as paid. Add package download links in Sanity Studio to show them here.
+                      </div>
+                    )}
                   </motion.div>
                 ) : (
                   <motion.form
@@ -294,7 +448,13 @@ ${formData.name}`;
                     initial={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    {/* Name */}
+                    {status === 'error' && errorMessage && (
+                      <div className="flex items-start gap-3 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span>{errorMessage}</span>
+                      </div>
+                    )}
+
                     <div>
                       <label htmlFor="name" className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
                         Full Name <span className="text-accent">*</span>
@@ -314,7 +474,6 @@ ${formData.name}`;
                       </div>
                     </div>
 
-                    {/* Email */}
                     <div>
                       <label htmlFor="email" className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
                         Email Address <span className="text-accent">*</span>
@@ -334,7 +493,6 @@ ${formData.name}`;
                       </div>
                     </div>
 
-                    {/* Phone */}
                     <div>
                       <label htmlFor="phone" className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
                         WhatsApp Number <span className="text-accent">*</span>
@@ -354,7 +512,6 @@ ${formData.name}`;
                       </div>
                     </div>
 
-                    {/* Package */}
                     <div>
                       <label htmlFor="package" className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
                         Select Package <span className="text-accent">*</span>
@@ -373,7 +530,7 @@ ${formData.name}`;
                           <option value="">Choose a package</option>
                           {packages.map((pkg: any) => (
                             <option key={pkg.id} value={pkg.id}>
-                              {pkg.title} — {pkg.price} {pkg.badge ? `★ ${pkg.badge}` : ''}
+                              {pkg.title} - {pkg.price} {pkg.badge ? `* ${pkg.badge}` : ''}
                             </option>
                           ))}
                         </select>
@@ -382,24 +539,24 @@ ${formData.name}`;
 
                     <button
                       type="submit"
-                      disabled={status === 'submitting'}
+                      disabled={status === 'submitting' || !isLoaded}
                       className="w-full py-4 px-6 rounded-2xl bg-accent text-white font-bold text-sm uppercase tracking-widest hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-accent/20 active:scale-95"
                     >
                       {status === 'submitting' ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          Submitting…
+                          Opening Checkout...
                         </>
                       ) : (
                         <>
                           <Send className="w-4 h-4" />
-                          Submit Registration
+                          {isSignedIn ? 'Pay with Razorpay' : 'Sign In to Purchase'}
                         </>
                       )}
                     </button>
 
                     <p className="text-center text-xs text-slate-400 font-light leading-relaxed">
-                      You will be asked to choose between Email or WhatsApp in the next step.
+                      Price is verified securely from Sanity before Razorpay checkout opens.
                     </p>
                   </motion.form>
                 )}
@@ -409,10 +566,12 @@ ${formData.name}`;
         </section>
       )}
 
-      {/* ─── FOOTER CTA ───────────────────────────────────────── */}
       <section className="max-w-4xl mx-auto px-6 md:px-12 pb-8">
         <motion.div
-          initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUp}
           className="rounded-3xl bg-slate-900 text-white p-10 md:p-14 relative overflow-hidden text-center"
         >
           <div className="absolute inset-0 opacity-20 bg-gradient-to-br from-accent via-transparent to-violet-900 pointer-events-none" />
@@ -422,7 +581,7 @@ ${formData.name}`;
               Wishing You All the Best for Your Journey!
             </h2>
             <p className="text-slate-400 font-light text-sm leading-relaxed max-w-xl mx-auto mb-8">
-              If you have any questions or need guidance during your preparation, feel free to reach out via the Contact page. We're here to support you.
+              If you have any questions or need guidance during your preparation, feel free to reach out via the Contact page.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               {packages.length > 0 && (
@@ -430,7 +589,7 @@ ${formData.name}`;
                   onClick={() => document.getElementById('register-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                   className="pill-button bg-accent text-white hover:bg-violet-600 flex items-center gap-2 shadow-lg shadow-accent/30"
                 >
-                  Register Now <ArrowRight className="w-4 h-4" />
+                  {status === 'success' ? 'View Access' : 'Buy Now'} <ArrowRight className="w-4 h-4" />
                 </button>
               )}
               <Link href="/contact" className="pill-button border border-slate-600 text-slate-300 hover:border-slate-400 hover:text-white">

@@ -342,6 +342,9 @@ export async function getStudyMaterials() {
       title,
       "slug": slug.current,
       description,
+      iconName,
+      image,
+      "imageUrl": coalesce(image.asset->url, imageUrl),
       order
     }`,
     {},
@@ -356,9 +359,12 @@ export async function getStudyMaterialBySlug(slug: string) {
       title,
       "slug": slug.current,
       description,
+      iconName,
+      image,
+      "imageUrl": coalesce(image.asset->url, imageUrl),
       introParagraphs,
       features[]{title, description, iconName},
-      packages[]{id, title, subtitle, price, badge, featuresList}
+      packages[]{id, title, subtitle, price, priceAmount, badge, featuresList}
     }`,
     { slug },
     NO_CACHE
