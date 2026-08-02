@@ -260,8 +260,8 @@ export default function HomePageClient(props: HomePageClientProps) {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.75, ease: "easeOut" }}
             className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-violet-50/50 via-white to-sky-50/50" />
@@ -272,7 +272,7 @@ export default function HomePageClient(props: HomePageClientProps) {
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="relative flex flex-col items-center z-10"
             >
-              <Logo showIcon={true} showSubtitle={false} className="scale-[2] mb-16" />
+              <Logo layoutId="site-logo" size="intro" showIcon={true} showSubtitle={false} className="mb-16" />
               
               <div className="h-10 relative flex items-center justify-center w-full overflow-hidden mt-6">
                 <AnimatePresence mode="wait">
