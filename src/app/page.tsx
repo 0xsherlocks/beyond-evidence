@@ -13,7 +13,7 @@ const FALLBACK = {
   valueProps: [
     { title: "Live Job Alerts", description: "Get the latest updates on forensic vacancies, internships, and government exams delivered instantly.", iconName: "BellRing", imageUrl: "https://images.unsplash.com/photo-1590103254922-bb7971777d19?auto=format&fit=crop&q=80", link: "/notification" },
     { title: "Mock Tests", description: "Test your preparation with high-quality, exam-pattern question sets and detailed performance analytics.", iconName: "BookCheck", imageUrl: "https://images.unsplash.com/photo-1579154273874-9467262276cb?auto=format&fit=crop&q=80", link: "/quiz" },
-    { title: "UGC NET Focused", description: "Premium study material perfectly aligned with the latest NTA UGC NET courses for Forensic Science.", iconName: "Target", imageUrl: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80", link: "/study-material/ugc-net-jrf" },
+    { title: "UGC NET Focused", description: "Premium study material perfectly aligned with the latest NTA UGC NET courses for Forensic Science.", iconName: "Target", imageUrl: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80", link: "/study-material" },
   ],
   featuredTopicsEyebrow: 'Explore Subjects',
   featuredTopicsTitle: 'Browse the Courses',
