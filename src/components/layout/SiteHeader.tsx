@@ -54,7 +54,7 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
       )}>
         <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <Logo showIcon={!isScrolled} showSubtitle={false} />
+            <Logo layoutId="site-logo" showIcon={!isScrolled} showSubtitle={false} />
           </Link>
 
           {/* Navigation and Actions grouped on the right */}

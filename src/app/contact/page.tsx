@@ -11,6 +11,7 @@ const FALLBACK = {
     { platform: 'whatsapp', url: 'https://chat.whatsapp.com/EokYCPFbvcp7XLiUSy8Qha' },
     { platform: 'instagram', url: 'https://www.instagram.com/beyond_evidence_' },
     { platform: 'linkedin', url: 'https://www.linkedin.com/in/beyond-evidence7/' },
+    { platform: 'youtube', url: 'https://www.youtube.com/@Beyond_Evidence' },
   ],
   businessHours: [
     { days: 'Monday to Wednesday', hours: '9 a.m. – 6 p.m.' },
@@ -29,6 +30,11 @@ export default async function ContactPage() {
   }
 
   const page = data || FALLBACK;
+  const socialLinks = page.socialLinks || FALLBACK.socialLinks;
+  const hasYouTube = socialLinks.some((social: any) => social.platform === 'youtube');
+  const socialLinksWithYouTube = hasYouTube
+    ? socialLinks
+    : [...socialLinks, { platform: 'youtube', url: 'https://www.youtube.com/@Beyond_Evidence' }];
 
   return (
     <ContactClient
@@ -37,7 +43,7 @@ export default async function ContactPage() {
       contactDescription={page.contactDescription || FALLBACK.contactDescription}
       phone={page.phone || FALLBACK.phone}
       email={page.email || FALLBACK.email}
-      socialLinks={page.socialLinks || FALLBACK.socialLinks}
+      socialLinks={socialLinksWithYouTube}
       businessHours={page.businessHours || FALLBACK.businessHours}
       closedNote={page.closedNote || FALLBACK.closedNote}
     />

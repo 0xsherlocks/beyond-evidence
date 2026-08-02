@@ -1,7 +1,7 @@
 "use client";
 
 import PageHero from '@/src/components/PageHero';
-import { Mail, Instagram, Linkedin, Phone, Clock } from 'lucide-react';
+import { Mail, Instagram, Linkedin, Youtube, Phone, Clock } from 'lucide-react';
 
 interface ContactClientProps {
   heroTitle: string;
@@ -26,6 +26,8 @@ function SocialIcon({ platform }: { platform: string }) {
       return <Instagram className="w-5 h-5" />;
     case 'linkedin':
       return <Linkedin className="w-5 h-5" />;
+    case 'youtube':
+      return <Youtube className="w-5 h-5" />;
     default:
       return <Mail className="w-5 h-5" />;
   }
