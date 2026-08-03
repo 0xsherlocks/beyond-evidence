@@ -20,3 +20,21 @@ model Purchase {
   status      String   @default("pending")
   createdAt   DateTime @default(now())
 }
+
+model AccessLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  purchaseId String?
+  slug       String?
+  packageId  String?
+  index      Int?
+  ip         String?
+  userAgent  String?
+  outcome    String
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([purchaseId])
+  @@index([createdAt])
+}

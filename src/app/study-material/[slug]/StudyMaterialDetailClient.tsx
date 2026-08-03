@@ -14,8 +14,8 @@ import {
   CheckCircle2,
   ChevronDown,
   ClipboardList,
-  Download,
   FileText,
+
   Mail,
   Package,
   Phone,
@@ -25,7 +25,9 @@ import {
   User,
 } from 'lucide-react';
 import PageHero from '@/src/components/PageHero';
+import SecurePdfViewer from '@/src/components/SecurePdfViewer';
 import { cn } from '@/src/lib/utils';
+
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
@@ -90,6 +92,8 @@ export default function StudyMaterialDetailClient({
   });
   const [errorMessage, setErrorMessage] = useState('');
   const [paidAccess, setPaidAccess] = useState<PaidAccess | null>(null);
+  const [activeDoc, setActiveDoc] = useState<{ url: string; title?: string } | null>(null);
+
 
   const selectedPkg = packages.find((pkg: any) => pkg.id === selectedPackage);
   const introParagraphs = material.introParagraphs || [];
@@ -416,22 +420,21 @@ export default function StudyMaterialDetailClient({
                     </div>
                     <h3 className="text-2xl font-display font-bold text-slate-900 mb-2">Payment Successful</h3>
                     <p className="text-slate-500 font-light text-sm leading-relaxed max-w-sm mx-auto mb-8">
-                      Your purchase is verified. Download links are shown below after checking your paid access.
+                      Your purchase is verified. Open your documents in the secure viewer below — each copy is watermarked with your account details.
                     </p>
 
                     {paidAccess?.downloadLinks && paidAccess.downloadLinks.length > 0 ? (
                       <div className="space-y-3 text-left">
                         {paidAccess.downloadLinks.map((link, index) => (
-                          <a
+                          <button
                             key={`${link.url}-${index}`}
-                            href={link.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm font-bold text-slate-700 transition-all hover:border-accent hover:text-accent hover:shadow-lg"
+                            type="button"
+                            onClick={() => link.url && setActiveDoc({ url: link.url, title: link.title })}
+                            className="w-full flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm font-bold text-slate-700 transition-all hover:border-accent hover:text-accent hover:shadow-lg"
                           >
-                            <span>{link.title || `Download ${index + 1}`}</span>
-                            <Download className="w-4 h-4 shrink-0" />
-                          </a>
+                            <span>{link.title || `Document ${index + 1}`}</span>
+                            <FileText className="w-4 h-4 shrink-0" />
+                          </button>
                         ))}
                       </div>
                     ) : (
@@ -439,6 +442,7 @@ export default function StudyMaterialDetailClient({
                         Payment is recorded as paid. Add package download links in Sanity Studio to show them here.
                       </div>
                     )}
+
                   </motion.div>
                 ) : (
                   <motion.form
@@ -599,6 +603,15 @@ export default function StudyMaterialDetailClient({
           </div>
         </motion.div>
       </section>
+
+      {activeDoc && (
+        <SecurePdfViewer
+          url={activeDoc.url}
+          title={activeDoc.title}
+          onClose={() => setActiveDoc(null)}
+        />
+      )}
     </div>
   );
 }
+
