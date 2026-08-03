@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/src/lib/prisma";
 import { sanityClient } from "@/src/sanity/client";
+import { createSignedToken } from "@/src/lib/signedUrl";
+
 
 export const runtime = "nodejs";
 
@@ -57,9 +59,14 @@ export async function GET(request) {
     courseName: purchase.courseName,
     packageId: purchase.packageId,
     packageName: purchase.packageName,
-    downloadLinks: downloadLinks.map((link, index) => ({
-      title: link.title || `Download ${index + 1}`,
-      url: `/api/study-material-download?slug=${encodeURIComponent(slug)}&packageId=${encodeURIComponent(packageId)}&index=${index}`,
-    })),
+    downloadLinks: downloadLinks.map((link, index) => {
+      // Fresh short-lived signed token per link, bound to this user + resource.
+      const token = createSignedToken({ userId, slug, packageId, index });
+      return {
+        title: link.title || `Document ${index + 1}`,
+        url: `/api/study-material-download?slug=${encodeURIComponent(slug)}&packageId=${encodeURIComponent(packageId)}&index=${index}&token=${encodeURIComponent(token)}`,
+      };
+    }),
   });
 }
+
