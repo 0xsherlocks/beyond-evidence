@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import Link from 'next/link';
+import Link from '@/src/components/ProtectedLink';
 import PageHero from '@/src/components/PageHero';
 import { motion, Variants } from 'framer-motion';
 import { ArrowUpRight, Search, X, BookOpen, FileText } from 'lucide-react';

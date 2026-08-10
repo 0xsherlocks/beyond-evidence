@@ -2,12 +2,16 @@ import { getHomePage, getNotifications } from '@/src/sanity/queries';
 import { getImageUrl } from '@/src/sanity/client';
 import HomePageClient from './HomePageClient';
 
-// Fallback data when Sanity has no content yet
+// Fallback data used when Sanity has no content yet or a field is missing
 const FALLBACK = {
   heroTitle: 'The Ultimate Hub for',
   heroTitleLine2: 'Forensic Science.',
-  heroHighlight: 'Education. Research. Career. All in one place.',
+  heroHighlight: 'Education, Research, Career & Much More — All in one place.',
   heroDescription: 'Explore in-depth study materials, test your knowledge with interactive quizzes, discover the latest jobs, and access cutting-edge research to advance your forensic career.',
+  heroCtaPrimaryText: 'Explore Courses',
+  heroCtaPrimaryLink: '/courses',
+  heroCtaSecondaryText: 'Research Desk',
+  heroCtaSecondaryLink: '/research',
   valuePropEyebrow: 'Our Features',
   valuePropTitle: 'Why Choose Beyond Evidence?',
   valueProps: [
@@ -23,6 +27,8 @@ const FALLBACK = {
     { name: 'Cyber Forensics', number: '03', imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80', link: '/courses' },
     { name: 'Forensic Toxicology', number: '04', imageUrl: 'https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&q=80', link: '/courses' },
   ],
+  newsletterTitle: 'Stay Updated with Our Latest Training Programs',
+  newsletterDescription: 'Get notified about new training programs, special offers, and educational content',
   bannerTitle: 'Start Your Preparation Today.',
   bannerDescription: 'Access premium study materials and take the first step towards your dream career in forensic science.',
   bannerImageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80',
@@ -42,19 +48,43 @@ export default async function Home() {
       latestNotification = notifications[0];
     }
   } catch (e) {
+    console.error("Error fetching Home page data from Sanity:", e);
     data = null;
   }
 
-  const page = data || FALLBACK;
+  const page = data || {};
 
-  // Resolve image URLs
-  // Force override the old Sanity database value props with the updated comprehensive ones
-  const valueProps = FALLBACK.valueProps.map((vp: any) => ({
+  // Each field: Sanity first, FALLBACK second
+  const heroTitle             = page.heroTitle             || FALLBACK.heroTitle;
+  const heroTitleLine2        = page.heroTitleLine2        || FALLBACK.heroTitleLine2;
+  const heroHighlight         = page.heroHighlight         || FALLBACK.heroHighlight;
+  const heroDescription       = page.heroDescription       || FALLBACK.heroDescription;
+  const heroCtaPrimaryText    = page.heroCtaPrimaryText    || FALLBACK.heroCtaPrimaryText;
+  const heroCtaPrimaryLink    = page.heroCtaPrimaryLink    || FALLBACK.heroCtaPrimaryLink;
+  const heroCtaSecondaryText  = page.heroCtaSecondaryText  || FALLBACK.heroCtaSecondaryText;
+  const heroCtaSecondaryLink  = page.heroCtaSecondaryLink  || FALLBACK.heroCtaSecondaryLink;
+  const valuePropEyebrow      = page.valuePropEyebrow      || FALLBACK.valuePropEyebrow;
+  const valuePropTitle        = page.valuePropTitle        || FALLBACK.valuePropTitle;
+  const featuredTopicsEyebrow = page.featuredTopicsEyebrow || FALLBACK.featuredTopicsEyebrow;
+  const featuredTopicsTitle   = page.featuredTopicsTitle   || FALLBACK.featuredTopicsTitle;
+  const newsletterTitle       = page.newsletterTitle       || FALLBACK.newsletterTitle;
+  const newsletterDescription = page.newsletterDescription || FALLBACK.newsletterDescription;
+  const bannerTitle           = page.bannerTitle           || FALLBACK.bannerTitle;
+  const bannerDescription     = page.bannerDescription     || FALLBACK.bannerDescription;
+  const bannerImageUrl        = page.bannerImageUrl        || FALLBACK.bannerImageUrl;
+  const bannerCta1Text        = page.bannerCta1Text        || FALLBACK.bannerCta1Text;
+  const bannerCta1Link        = page.bannerCta1Link        || FALLBACK.bannerCta1Link;
+  const bannerCta2Text        = page.bannerCta2Text        || FALLBACK.bannerCta2Text;
+  const bannerCta2Link        = page.bannerCta2Link        || FALLBACK.bannerCta2Link;
+
+  const rawValueProps = page.valueProps?.length > 0 ? page.valueProps : FALLBACK.valueProps;
+  const valueProps = rawValueProps.map((vp: any) => ({
     ...vp,
     resolvedImage: getImageUrl(vp, vp.imageUrl),
   }));
 
-  const featuredTopics = (page.featuredTopics || FALLBACK.featuredTopics).map((ft: any) => ({
+  const rawFeaturedTopics = page.featuredTopics?.length > 0 ? page.featuredTopics : FALLBACK.featuredTopics;
+  const featuredTopics = rawFeaturedTopics.map((ft: any) => ({
     ...ft,
     resolvedImage: getImageUrl(ft, ft.imageUrl),
   }));
@@ -62,24 +92,29 @@ export default async function Home() {
   return (
     <HomePageClient
       latestNotification={latestNotification}
-      // Forcing the new professional text directly from code
-      heroTitle={FALLBACK.heroTitle}
-      heroTitleLine2={FALLBACK.heroTitleLine2}
-      heroHighlight={FALLBACK.heroHighlight}
-      heroDescription={FALLBACK.heroDescription}
-      valuePropEyebrow={FALLBACK.valuePropEyebrow}
-      valuePropTitle={FALLBACK.valuePropTitle}
+      heroTitle={heroTitle}
+      heroTitleLine2={heroTitleLine2}
+      heroHighlight={heroHighlight}
+      heroDescription={heroDescription}
+      heroCtaPrimaryText={heroCtaPrimaryText}
+      heroCtaPrimaryLink={heroCtaPrimaryLink}
+      heroCtaSecondaryText={heroCtaSecondaryText}
+      heroCtaSecondaryLink={heroCtaSecondaryLink}
+      valuePropEyebrow={valuePropEyebrow}
+      valuePropTitle={valuePropTitle}
       valueProps={valueProps}
-      featuredTopicsEyebrow={FALLBACK.featuredTopicsEyebrow}
-      featuredTopicsTitle={FALLBACK.featuredTopicsTitle}
+      featuredTopicsEyebrow={featuredTopicsEyebrow}
+      featuredTopicsTitle={featuredTopicsTitle}
       featuredTopics={featuredTopics}
-      bannerTitle={FALLBACK.bannerTitle}
-      bannerDescription={FALLBACK.bannerDescription}
-      bannerImageUrl={page.bannerImageUrl || FALLBACK.bannerImageUrl}
-      bannerCta1Text={FALLBACK.bannerCta1Text}
-      bannerCta1Link={page.bannerCta1Link || FALLBACK.bannerCta1Link}
-      bannerCta2Text={FALLBACK.bannerCta2Text}
-      bannerCta2Link={page.bannerCta2Link || FALLBACK.bannerCta2Link}
+      newsletterTitle={newsletterTitle}
+      newsletterDescription={newsletterDescription}
+      bannerTitle={bannerTitle}
+      bannerDescription={bannerDescription}
+      bannerImageUrl={bannerImageUrl}
+      bannerCta1Text={bannerCta1Text}
+      bannerCta1Link={bannerCta1Link}
+      bannerCta2Text={bannerCta2Text}
+      bannerCta2Link={bannerCta2Link}
     />
   );
 }

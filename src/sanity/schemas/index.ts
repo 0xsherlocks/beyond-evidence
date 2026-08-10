@@ -14,6 +14,7 @@ import { researchPage } from './researchPage'
 import { studyMaterial } from './studyMaterial'
 import { dfssVacancy } from './dfssVacancy'
 import { notificationPage } from './notificationPage'
+import { newsletterSubscriber } from './newsletterSubscriber'
 
 export const schemaTypes = [
   // Singletons
@@ -35,4 +36,5 @@ export const schemaTypes = [
   notification,
   studyMaterial,
   dfssVacancy,
+  newsletterSubscriber,
 ]

@@ -1,8 +1,9 @@
 import { clerkMiddleware } from '@clerk/nextjs/server';
 
-// Clerk middleware protects routes. By default, all routes are public.
-// We will protect specific routes (like premium content) in their page components.
-export default clerkMiddleware();
+export default clerkMiddleware(async (auth, req) => {
+  // We are now protecting routes client-side using AuthModalGuard and ProtectedLink
+  // to show a modal instead of a full page redirect.
+});
 
 export const config = {
   matcher: [

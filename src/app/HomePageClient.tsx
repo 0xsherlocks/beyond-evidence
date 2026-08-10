@@ -3,8 +3,9 @@
 import { useRef, MouseEvent, useState, useEffect } from 'react';
 import { motion, Variants, useScroll, useTransform, useSpring, useMotionValue, AnimatePresence } from 'framer-motion';
 import { ArrowRight, BookOpen, Microscope, BookCheck, ArrowUpRight, BellRing, Target } from 'lucide-react';
-import Link from 'next/link';
+import Link from '@/src/components/ProtectedLink';
 import Logo from '@/src/components/Logo';
+import NewsletterSection from '@/src/components/NewsletterSection';
 
 const ICON_MAP: Record<string, any> = {
   BookOpen,
@@ -204,12 +205,18 @@ interface HomePageClientProps {
   heroTitleLine2: string;
   heroHighlight: string;
   heroDescription: string;
+  heroCtaPrimaryText: string;
+  heroCtaPrimaryLink: string;
+  heroCtaSecondaryText: string;
+  heroCtaSecondaryLink: string;
   valuePropEyebrow: string;
   valuePropTitle: string;
   valueProps: Array<{ title: string; description: string; iconName: string; resolvedImage: string }>;
   featuredTopicsEyebrow: string;
   featuredTopicsTitle: string;
   featuredTopics: Array<{ name: string; number: string; resolvedImage: string; link: string }>;
+  newsletterTitle: string;
+  newsletterDescription: string;
   bannerTitle: string;
   bannerDescription: string;
   bannerImageUrl: string;
@@ -294,7 +301,7 @@ export default function HomePageClient(props: HomePageClientProps) {
       </AnimatePresence>
 
       {/* Hero Section */}
-      <section className="relative px-6 md:px-12 pt-32 pb-16 md:pt-40 md:pb-20 lg:pt-48 lg:pb-20 flex items-center justify-center">
+      <section className="relative px-6 md:px-12 pt-24 pb-10 md:pt-28 md:pb-14 lg:pt-32 lg:pb-16 flex items-center justify-center min-h-[calc(100vh-80px)]">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
 
         <div className="max-w-5xl mx-auto w-full flex flex-col items-center">
@@ -306,7 +313,7 @@ export default function HomePageClient(props: HomePageClientProps) {
             variants={containerVariants}
           >
             {props.latestNotification && (
-              <motion.div variants={itemVariants} className="mb-8">
+              <motion.div variants={itemVariants} className="mb-5 md:mb-6">
                 <Link 
                   href={props.latestNotification.link || (props.latestNotification.fileUrl ? props.latestNotification.fileUrl : '/notification')}
                   className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 hover:bg-accent/20 hover:border-accent/30 transition-all duration-300 group shadow-sm"
@@ -328,7 +335,7 @@ export default function HomePageClient(props: HomePageClientProps) {
 
             <motion.h1
               variants={itemVariants}
-              className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold font-display tracking-tight text-slate-900 leading-[0.95] mb-6"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold font-display tracking-tight text-slate-900 leading-[0.98] mb-4 md:mb-6"
             >
               {props.heroTitle}<br />
               <span className="text-accent">{props.heroTitleLine2}</span>
@@ -336,7 +343,7 @@ export default function HomePageClient(props: HomePageClientProps) {
 
             <motion.p
               variants={itemVariants}
-              className="text-base md:text-xl text-slate-600 max-w-2xl mb-10 font-light leading-relaxed"
+              className="text-base md:text-lg text-slate-600 max-w-2xl mb-6 md:mb-8 font-light leading-relaxed"
             >
               <strong className="font-semibold text-slate-800">{props.heroHighlight}</strong><br />
               {props.heroDescription}
@@ -344,13 +351,13 @@ export default function HomePageClient(props: HomePageClientProps) {
 
             <motion.div
               variants={itemVariants}
-              className="flex flex-col sm:flex-row items-center justify-center gap-8"
+              className="flex flex-col sm:flex-row items-center justify-center gap-5 md:gap-6"
             >
-              <Link href="/courses" className="pill-button bg-accent text-white hover:bg-[#6d28d9] flex items-center gap-3 shadow-lg shadow-accent/20 transition-all hover:-translate-y-1">
-                Explore Courses <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              <Link href={props.heroCtaPrimaryLink} className="pill-button bg-accent text-white hover:bg-[#6d28d9] flex items-center gap-3 shadow-lg shadow-accent/20 transition-all hover:-translate-y-1">
+                {props.heroCtaPrimaryText} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Link>
-              <Link href="/research" className="text-sm font-bold uppercase tracking-[0.3em] text-slate-600 hover:text-accent transition-colors">
-                Research Desk
+              <Link href={props.heroCtaSecondaryLink} className="text-sm font-bold uppercase tracking-[0.3em] text-slate-600 hover:text-accent transition-colors">
+                {props.heroCtaSecondaryText}
               </Link>
             </motion.div>
           </motion.div>
@@ -437,6 +444,9 @@ export default function HomePageClient(props: HomePageClientProps) {
           </motion.div>
         </div>
       </section>
+
+      {/* Training Program Subscription Newsletter (Placed at very last) */}
+      <NewsletterSection title={props.newsletterTitle} description={props.newsletterDescription} />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import Logo from '../Logo';
 import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { useAuth } from '@clerk/nextjs';
+import ProtectedLink from '../ProtectedLink';
 
 interface NavLink {
   label: string;
@@ -52,34 +53,34 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
         'fixed top-0 inset-x-0 z-50 transition-all duration-500 border-b flex items-center',
         isScrolled ? 'bg-white/90 backdrop-blur-lg border-slate-200/50 h-[60px] shadow-sm' : 'bg-transparent border-transparent h-[80px]'
       )}>
-        <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 flex items-center justify-between">
+        <div className="max-w-[1400px] w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-12 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group shrink-0">
             <Logo layoutId="site-logo" showIcon={!isScrolled} showSubtitle={false} />
           </Link>
 
           {/* Navigation and Actions grouped on the right */}
-          <div className="flex items-center gap-8 lg:gap-16">
+          <div className="flex items-center justify-between ml-auto gap-4 lg:gap-8 shrink-0">
             {/* Desktop navigation */}
-            <nav className="hidden md:flex items-center gap-8 lg:gap-12">
+            <nav className="hidden md:flex items-center gap-3 lg:gap-5 xl:gap-8">
               {navLinks.map((link) => (
-                <Link
+                <ProtectedLink
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "text-[11px] font-bold uppercase tracking-[0.2em] transition-colors whitespace-nowrap",
+                    "text-[11px] font-bold uppercase tracking-[0.12em] lg:tracking-[0.15em] transition-colors whitespace-nowrap",
                     pathname === link.href ? "text-accent" : "text-slate-600 hover:text-slate-900"
                   )}
                 >
                   {link.label}
-                </Link>
+                </ProtectedLink>
               ))}
             </nav>
 
             {/* Actions */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 md:gap-4 shrink-0">
               {/* Studio CMS — only visible when NEXT_PUBLIC_SHOW_STUDIO=true */}
               {SHOW_STUDIO && (
-                <Link href="/studio" className="hidden lg:flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-accent transition-colors whitespace-nowrap">
+                <Link href="/studio" className="hidden lg:flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 hover:text-accent transition-colors whitespace-nowrap shrink-0">
                   <Database className="w-4 h-4" />
                   Studio CMS
                 </Link>
@@ -96,7 +97,7 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
                 />
               ) : (
                 <SignInButton mode="modal">
-                  <button className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent text-white text-[11px] font-bold uppercase tracking-[0.15em] hover:bg-[#6d28d9] transition-all shadow-sm">
+                  <button className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent text-white text-[11px] font-bold uppercase tracking-[0.15em] hover:bg-[#6d28d9] transition-all shadow-sm shrink-0 whitespace-nowrap">
                     <LogIn className="w-3.5 h-3.5" />
                     Sign In
                   </button>
@@ -119,7 +120,7 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
         <div className="fixed inset-0 z-40 bg-white pt-24 px-6 md:hidden overflow-y-auto">
           <nav className="flex flex-col gap-1">
             {navLinks.map((link) => (
-              <Link
+              <ProtectedLink
                 key={link.href}
                 href={link.href}
                 className={cn(
@@ -129,7 +130,7 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {link.label}
-              </Link>
+              </ProtectedLink>
             ))}
             {/* Studio CMS — hidden from students in production */}
             {SHOW_STUDIO && (

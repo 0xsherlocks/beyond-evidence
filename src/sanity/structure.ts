@@ -60,4 +60,9 @@ export const structure: StructureResolver = (S) =>
       S.documentTypeListItem('quiz').title('Quizzes'),
       S.documentTypeListItem('notification').title('Official Announcements (Alerts)'),
       S.documentTypeListItem('dfssVacancy').title('DFSS Vacancies (Scraped)'),
+
+      S.divider(),
+
+      // CRM — Newsletter subscribers collected from the homepage form
+      S.documentTypeListItem('newsletterSubscriber').title('Newsletter Subscribers'),
     ])
