@@ -7,7 +7,7 @@ const NO_CACHE = { cache: 'no-store' as RequestCache }
 export async function getNavigation() {
   return sanityClient.fetch(
     `*[_type == "navigation"][0]{
-      headerLinks[]{label, href},
+      "headerLinks": headerLinks[isVisible != false]{label, href},
       footerLinks[]{label, href}
     }`,
     {},
@@ -36,15 +36,24 @@ export async function getHomePage() {
       heroTitleLine2,
       heroHighlight,
       heroDescription,
+      heroCtaPrimaryText,
+      heroCtaPrimaryLink,
+      heroCtaSecondaryText,
+      heroCtaSecondaryLink,
       valuePropEyebrow,
       valuePropTitle,
-      valueProps[]{title, description, iconName, image, imageUrl},
+      valueProps[]{title, description, iconName, image, imageUrl, link},
       featuredTopicsEyebrow,
       featuredTopicsTitle,
       featuredTopics[]{name, number, image, imageUrl, link},
+      newsletterTitle,
+      newsletterDescription,
       bannerTitle,
       bannerDescription,
-      bannerImageUrl,
+      "bannerImageUrl": select(
+        defined(bannerImage.asset) => bannerImage.asset->url,
+        bannerImageUrl
+      ),
       bannerCta1Text,
       bannerCta1Link,
       bannerCta2Text,

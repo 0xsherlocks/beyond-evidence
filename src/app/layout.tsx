@@ -54,51 +54,21 @@ export default async function RootLayout({
   try {
     nav = await getNavigation();
   } catch (e) {
+    console.error("Error fetching navigation from Sanity:", e);
     nav = null;
   }
 
-  const HOME_LINK = { label: 'Home', href: '/' };
-  let rawHeaderLinks = nav?.headerLinks?.length > 0 ? nav.headerLinks : DEFAULT_HEADER_LINKS;
+  // Sanity navigation is the source of truth (isVisible filtering done in GROQ).
+  // If Sanity has no nav yet, fall back to defaults.
+  const rawHeaderLinks: { label: string; href: string }[] =
+    nav?.headerLinks?.length > 0 ? nav.headerLinks : DEFAULT_HEADER_LINKS;
 
-  // Force rename 'Study Material' to 'Competitive Exams' if it came from Sanity
-  rawHeaderLinks = rawHeaderLinks.map((link: any) => {
-    if (link.href === '/study-material') {
-      return { ...link, label: 'Competitive Exams' };
-    }
-    return link;
-  });
+  // Auto-prepend "Home" if not present so it's always first
+  const headerLinks =
+    rawHeaderLinks[0]?.href === '/' ? rawHeaderLinks : [{ label: 'Home', href: '/' }, ...rawHeaderLinks];
 
-  // Force inject Competitive Exams if it's missing from Sanity's DB
-  const hasStudyMaterial = rawHeaderLinks.some((link: any) => link.href === '/study-material');
-  if (!hasStudyMaterial) {
-    // Replace UGC-NET or Topics if they exist, otherwise append before Contact
-    const updatedLinks = [];
-    let added = false;
-    for (const link of rawHeaderLinks) {
-      if (link.href === '/ugc-net' || link.href === '/topics' || link.label === 'UGC-NET' || link.label === 'Topics') {
-        if (!added) {
-          updatedLinks.push({ label: 'Competitive Exams', href: '/study-material' });
-          added = true;
-        }
-      } else {
-        updatedLinks.push(link);
-      }
-    }
-
-    if (!added) {
-      // Insert right before Contact
-      const contactIdx = updatedLinks.findIndex((l: any) => l.href === '/contact');
-      if (contactIdx >= 0) {
-        updatedLinks.splice(contactIdx, 0, { label: 'Competitive Exams', href: '/study-material' });
-      } else {
-        updatedLinks.push({ label: 'Competitive Exams', href: '/study-material' });
-      }
-    }
-    rawHeaderLinks = updatedLinks;
-  }
-
-  const headerLinks = rawHeaderLinks[0]?.href === '/' ? rawHeaderLinks : [HOME_LINK, ...rawHeaderLinks];
-  const footerLinks = nav?.footerLinks?.length > 0 ? nav.footerLinks : DEFAULT_FOOTER_LINKS;
+  const footerLinks: { label: string; href: string }[] =
+    nav?.footerLinks?.length > 0 ? nav.footerLinks : DEFAULT_FOOTER_LINKS;
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -108,7 +78,14 @@ export default async function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className={`${sora.variable} ${spaceGrotesk.variable} antialiased min-h-screen flex flex-col bg-transparent text-foreground`} suppressHydrationWarning>
-        <ClerkProvider>
+        <ClerkProvider
+          appearance={{
+            elements: {
+              headerTitle: "Sign in to Beyond Evidence",
+              headerSubtitle: "Welcome back to your curated database",
+            },
+          }}
+        >
           <MotionLayoutGroup>
             <SiteHeader headerLinks={headerLinks} />
             <main className="flex-1">
