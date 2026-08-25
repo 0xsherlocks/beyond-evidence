@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import PageHero from '@/src/components/PageHero';
-import { motion } from 'framer-motion';
-import { BookOpen, ClipboardList, FileText, Target, Sparkles, BadgeIndianRupee, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BookOpen, ClipboardList, FileText, Target, Sparkles, BadgeIndianRupee, ArrowRight, ShieldAlert, X } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface StudyMaterialItem {
   _id: string;
@@ -34,8 +36,44 @@ const cardVariants = {
 };
 
 export default function StudyMaterialListClient({ materials }: { materials: StudyMaterialItem[] }) {
+  const searchParams = useSearchParams();
+  const [toast, setToast] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('toast') === 'purchase_required') {
+      setToast(true);
+      const t = setTimeout(() => setToast(false), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [searchParams]);
+
   return (
     <div className="min-h-screen pb-24">
+      {/* ── Purchase-required toast ── */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            id="purchase-required-toast"
+            initial={{ opacity: 0, y: -60 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -60 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+            className="fixed top-5 left-1/2 z-[9999] -translate-x-1/2 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl text-white text-sm font-semibold max-w-sm w-full"
+            style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #4c1d95 100%)', border: '1px solid rgba(108,78,246,0.4)' }}
+          >
+            <ShieldAlert className="w-5 h-5 shrink-0 text-violet-300" />
+            <span className="flex-1">Purchase required to access this content</span>
+            <button
+              onClick={() => setToast(false)}
+              className="shrink-0 p-1 rounded-lg hover:bg-white/10 transition-colors"
+              aria-label="Dismiss"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <PageHero
         eyebrow="Exam Preparation"
         title="Competitive Exams"
@@ -92,8 +130,8 @@ export default function StudyMaterialListClient({ materials }: { materials: Stud
                   View Package <ArrowRight className="w-4 h-4" />
                 </div>
                 </div>
-                </motion.div>
-              </Link>
+                  </motion.div>
+                </Link>
               );
             })}
           </motion.div>
@@ -102,3 +140,4 @@ export default function StudyMaterialListClient({ materials }: { materials: Stud
     </div>
   );
 }
+

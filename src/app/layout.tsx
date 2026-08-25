@@ -7,6 +7,7 @@ import Link from "next/link";
 import Logo from "@/src/components/Logo";
 import { getNavigation } from "@/src/sanity/queries";
 import { ClerkProvider } from "@clerk/nextjs";
+import { headers } from "next/headers";
 
 // Force dynamic rendering so navigation always reflects latest Sanity data
 export const dynamic = 'force-dynamic';
@@ -45,11 +46,19 @@ const DEFAULT_FOOTER_LINKS = [
   { label: 'Legal', href: '/legal' },
 ];
 
+// Routes that render their own full-screen layout (no site header/footer)
+const BARE_PREFIXES = ['/reader', '/dashboard']
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Detect bare routes via the incoming request pathname
+  const headersList = await headers()
+  const pathname = headersList.get('x-pathname') ?? headersList.get('x-invoke-path') ?? ''
+  const isBareRoute = BARE_PREFIXES.some(prefix => pathname.startsWith(prefix))
+
   let nav;
   try {
     nav = await getNavigation();
@@ -87,6 +96,11 @@ export default async function RootLayout({
           }}
         >
           <MotionLayoutGroup>
+            {isBareRoute ? (
+              // Full-screen routes: reader & dashboard manage their own layout
+              <>{children}</>
+            ) : (
+              <>
             <SiteHeader headerLinks={headerLinks} />
             <main className="flex-1">
               {children}
@@ -149,6 +163,8 @@ export default async function RootLayout({
                 </div>
               </div>
             </footer>
+              </>
+            )}
           </MotionLayoutGroup>
         </ClerkProvider>
       </body>

@@ -38,3 +38,23 @@ model AccessLog {
   @@index([purchaseId])
   @@index([createdAt])
 }
+
+/// Tracks which Sanity premiumCourse documents a user has paid for.
+/// courseSlug is the premiumCourse slug.current value used in /reader/[courseSlug].
+model PremiumPurchase {
+  id           String   @id @default(cuid())
+  userId       String
+  courseId     String   // Sanity _id
+  courseSlug   String   // sanity slug.current → matches /reader/[courseSlug]
+  courseName   String
+  examType     String
+  amount       Int
+  paymentId    String?  @unique
+  orderId      String   @unique
+  status       String   @default("pending")
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([courseSlug])
+  @@index([userId, courseSlug])
+}

@@ -247,18 +247,8 @@ export default function StudyMaterialDetailClient({
         throw new Error(verifyData?.error || 'Payment verification failed.');
       }
 
-      const accessResponse = await fetch(
-        `/api/study-material-access?slug=${encodeURIComponent(verifyData.courseId)}&packageId=${encodeURIComponent(verifyData.packageId)}`,
-        { cache: 'no-store' }
-      );
-      const accessData = await accessResponse.json();
-
-      if (!accessResponse.ok || !accessData.hasAccess) {
-        throw new Error('Payment succeeded, but access could not be confirmed. Please refresh and try again.');
-      }
-
-      setPaidAccess(accessData);
-      setStatus('success');
+      // After successful payment, redirect to dashboard/my-courses
+      window.location.href = verifyData.redirectUrl || '/dashboard/my-courses';
     } catch (error: any) {
       setErrorMessage(error?.message || 'Payment could not be completed. Please try again.');
       setStatus('error');
