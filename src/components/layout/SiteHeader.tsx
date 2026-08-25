@@ -85,16 +85,24 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
                   Studio CMS
                 </Link>
               )}
-              {/* Auth buttons */}
+              {/* Auth buttons & My Courses link */}
               {isSignedIn ? (
-                <UserButton
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      avatarBox: 'w-8 h-8',
-                    },
-                  }}
-                />
+                <div className="flex items-center gap-3">
+                  <Link
+                    href="/dashboard/my-courses"
+                    className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200 text-[11px] font-bold uppercase tracking-[0.12em] hover:bg-violet-100 transition-all shadow-xs"
+                  >
+                    My Courses
+                  </Link>
+                  <UserButton
+                    afterSignOutUrl="/"
+                    appearance={{
+                      elements: {
+                        avatarBox: 'w-8 h-8',
+                      },
+                    }}
+                  />
+                </div>
               ) : (
                 <SignInButton mode="modal">
                   <button className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent text-white text-[11px] font-bold uppercase tracking-[0.15em] hover:bg-[#6d28d9] transition-all shadow-sm shrink-0 whitespace-nowrap">
