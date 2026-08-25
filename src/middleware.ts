@@ -1,8 +1,27 @@
 import { clerkMiddleware } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+
+const PROTECTED_PREFIXES = ['/dashboard', '/reader']
 
 export default clerkMiddleware(async (auth, req) => {
-  // We are now protecting routes client-side using AuthModalGuard and ProtectedLink
-  // to show a modal instead of a full page redirect.
+  const path = req.nextUrl.pathname
+
+  // Always forward the pathname so the root RSC layout can conditionally
+  // strip the site header/footer for full-screen routes.
+  const requestHeaders = new Headers(req.headers)
+  requestHeaders.set('x-pathname', path)
+
+  // Protect dashboard and reader routes at the edge
+  if (PROTECTED_PREFIXES.some(prefix => path.startsWith(prefix))) {
+    const { userId } = await auth()
+    if (!userId) {
+      const signInUrl = new URL('/sign-in', req.url)
+      signInUrl.searchParams.set('redirect_url', path)
+      return NextResponse.redirect(signInUrl)
+    }
+  }
+
+  return NextResponse.next({ request: { headers: requestHeaders } })
 });
 
 export const config = {
@@ -13,3 +32,5 @@ export const config = {
     '/(api|trpc)(.*)',
   ],
 };
+
+

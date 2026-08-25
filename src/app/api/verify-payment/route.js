@@ -89,10 +89,36 @@ export async function POST(request) {
     },
   });
 
+  // Sync with PremiumPurchase table for /dashboard/my-courses and reader access control
+  try {
+    await prisma.premiumPurchase.upsert({
+      where: { orderId },
+      create: {
+        userId: updatedPurchase.userId,
+        courseId: updatedPurchase.courseId,
+        courseSlug: updatedPurchase.courseId,
+        courseName: updatedPurchase.courseName,
+        examType: "UGC NET",
+        amount: updatedPurchase.amount,
+        paymentId: paymentId,
+        orderId: orderId,
+        status: "paid",
+      },
+      update: {
+        status: "paid",
+        paymentId: paymentId,
+      },
+    });
+  } catch (err) {
+    console.error("Error creating PremiumPurchase record in verify-payment:", err);
+  }
+
   return NextResponse.json({
     success: true,
     status: updatedPurchase.status,
     courseId: updatedPurchase.courseId,
     packageId: updatedPurchase.packageId,
+    redirectUrl: "/dashboard/my-courses",
   });
 }
+

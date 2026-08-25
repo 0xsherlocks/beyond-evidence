@@ -412,3 +412,61 @@ export async function getNotificationPage() {
     NO_CACHE
   )
 }
+
+// ─── Premium Courses ─────────────────────────────────────────
+export async function getPremiumCourses() {
+  return sanityClient.fetch(
+    `*[_type == "premiumCourse"] | order(_createdAt desc){
+      _id,
+      title,
+      "slug": slug.current,
+      examType,
+      price,
+      description,
+      isPremium,
+      "thumbnailUrl": thumbnail.asset->url
+    }`,
+    {},
+    NO_CACHE
+  )
+}
+
+export async function getPremiumCourseBySlug(slug: string) {
+  return sanityClient.fetch(
+    `*[_type == "premiumCourse" && slug.current == $slug][0]{
+      _id,
+      title,
+      "slug": slug.current,
+      examType,
+      price,
+      description,
+      isPremium,
+      "thumbnailUrl": thumbnail.asset->url,
+      units[]{
+        unitTitle,
+        content[]{
+          ...,
+          _type == "image" => {
+            ...,
+            "asset": asset->{url, metadata}
+          }
+        }
+      }
+    }`,
+    { slug },
+    NO_CACHE
+  )
+}
+
+export async function getPremiumCourseById(id: string) {
+  return sanityClient.fetch(
+    `*[_type == "premiumCourse" && _id == $id][0]{
+      _id,
+      title,
+      "slug": slug.current,
+      examType
+    }`,
+    { id },
+    NO_CACHE
+  )
+}
