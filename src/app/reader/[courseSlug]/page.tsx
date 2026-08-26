@@ -18,8 +18,15 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
   }
 
   // Access control — check if user has a paid purchase for this slug
-  const purchase = await prisma.premiumPurchase.findFirst({
-    where: { userId, courseSlug, status: 'paid' },
+  const purchase = await prisma.purchase.findFirst({
+    where: {
+      userId,
+      OR: [
+        { courseSlug: courseSlug },
+        { courseId: courseSlug }
+      ],
+      status: 'paid',
+    },
     select: { id: true },
   })
 

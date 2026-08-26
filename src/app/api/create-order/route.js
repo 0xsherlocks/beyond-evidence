@@ -116,7 +116,9 @@ export async function POST(request) {
     data: {
       userId,
       courseId: material.slug,
+      courseSlug: material.slug,
       courseName: material.title,
+      examType: "UGC NET",
       packageId: selectedPackage.id,
       packageName: selectedPackage.title,
       amount: Math.round(priceAmount),

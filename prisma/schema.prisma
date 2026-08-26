@@ -7,18 +7,26 @@ datasource db {
   provider = "postgresql"
 }
 
+/// Unified Purchase model for tracking all course, note, and study material purchases.
 model Purchase {
   id          String   @id @default(cuid())
   userId      String
   courseId    String
+  courseSlug  String?  // Sanity slug.current used in /reader/[courseSlug]
   courseName  String
-  packageId   String
-  packageName String
+  examType    String?  // UGC NET, UPSC, SSC, etc.
+  packageId   String?
+  packageName String?
   amount      Int
   paymentId   String?  @unique
   orderId     String   @unique
   status      String   @default("pending")
   createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([courseSlug])
+  @@index([userId, courseSlug])
+  @@index([orderId])
 }
 
 model AccessLog {
@@ -37,24 +45,4 @@ model AccessLog {
   @@index([userId])
   @@index([purchaseId])
   @@index([createdAt])
-}
-
-/// Tracks which Sanity premiumCourse documents a user has paid for.
-/// courseSlug is the premiumCourse slug.current value used in /reader/[courseSlug].
-model PremiumPurchase {
-  id           String   @id @default(cuid())
-  userId       String
-  courseId     String   // Sanity _id
-  courseSlug   String   // sanity slug.current → matches /reader/[courseSlug]
-  courseName   String
-  examType     String
-  amount       Int
-  paymentId    String?  @unique
-  orderId      String   @unique
-  status       String   @default("pending")
-  createdAt    DateTime @default(now())
-
-  @@index([userId])
-  @@index([courseSlug])
-  @@index([userId, courseSlug])
 }

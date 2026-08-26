@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing payment verification fields' }, { status: 400 })
   }
 
-  const purchase = await prisma.premiumPurchase.findUnique({ where: { orderId } })
+  const purchase = await prisma.purchase.findUnique({ where: { orderId } })
   if (!purchase) {
     return NextResponse.json({ error: 'Purchase not found' }, { status: 404 })
   }
@@ -61,11 +61,11 @@ export async function POST(request: Request) {
   }
 
   if (!verifyRazorpaySignature(orderId, paymentId, signature)) {
-    await prisma.premiumPurchase.update({ where: { orderId }, data: { status: 'failed' } })
+    await prisma.purchase.update({ where: { orderId }, data: { status: 'failed' } })
     return NextResponse.json({ error: 'Invalid payment signature' }, { status: 400 })
   }
 
-  const updated = await prisma.premiumPurchase.update({
+  const updated = await prisma.purchase.update({
     where: { orderId },
     data: { paymentId, status: 'paid' },
   })
