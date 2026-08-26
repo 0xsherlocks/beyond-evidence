@@ -67,36 +67,14 @@ export async function POST(request) {
     return NextResponse.json({ success: true, status: "paid" });
   }
 
-  const updated = await prisma.purchase.update({
+  await prisma.purchase.update({
     where: { orderId },
     data: {
       paymentId,
       status: "paid",
+      courseSlug: purchase.courseSlug || purchase.courseId,
     },
   });
-
-  try {
-    await prisma.premiumPurchase.upsert({
-      where: { orderId },
-      create: {
-        userId: updated.userId,
-        courseId: updated.courseId,
-        courseSlug: updated.courseId,
-        courseName: updated.courseName,
-        examType: "UGC NET",
-        amount: updated.amount,
-        paymentId: paymentId,
-        orderId: orderId,
-        status: "paid",
-      },
-      update: {
-        status: "paid",
-        paymentId: paymentId,
-      },
-    });
-  } catch (err) {
-    console.error("Error creating PremiumPurchase record in webhook:", err);
-  }
 
   return NextResponse.json({ success: true, status: "paid" });
 }

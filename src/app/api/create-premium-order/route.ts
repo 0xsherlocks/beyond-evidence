@@ -80,7 +80,7 @@ export async function POST(request: Request) {
   }
 
   // Check for existing paid purchase (idempotency)
-  const existing = await prisma.premiumPurchase.findFirst({
+  const existing = await prisma.purchase.findFirst({
     where: { userId, courseSlug, status: 'paid' },
     select: { id: true },
   })
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
     notes: { userId, courseId: course._id, courseSlug, examType: course.examType },
   })
 
-  const purchase = await prisma.premiumPurchase.create({
+  const purchase = await prisma.purchase.create({
     data: {
       userId,
       courseId: course._id,

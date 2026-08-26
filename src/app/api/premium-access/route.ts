@@ -14,10 +14,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ access: false, reason: 'missing_slug' }, { status: 400 })
   }
 
-  const purchase = await prisma.premiumPurchase.findFirst({
+  const purchase = await prisma.purchase.findFirst({
     where: {
       userId,
-      courseSlug: slug,
+      OR: [
+        { courseSlug: slug },
+        { courseId: slug }
+      ],
       status: 'paid',
     },
     select: { id: true, courseName: true },

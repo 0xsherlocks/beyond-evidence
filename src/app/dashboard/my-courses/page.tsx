@@ -9,7 +9,7 @@ export default async function MyCoursesPage() {
 
   const user = await currentUser()
 
-  const purchases = await prisma.premiumPurchase.findMany({
+  const purchases = await prisma.purchase.findMany({
     where: { userId, status: 'paid' },
     orderBy: { createdAt: 'desc' },
   })
@@ -17,8 +17,8 @@ export default async function MyCoursesPage() {
   const courses = purchases.map((p) => ({
     id: p.id,
     courseName: p.courseName,
-    courseSlug: p.courseSlug,
-    examType: p.examType,
+    courseSlug: p.courseSlug || p.courseId,
+    examType: p.examType || 'UGC NET',
     purchasedAt: p.createdAt.toISOString(),
   }))
 
