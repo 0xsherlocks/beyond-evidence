@@ -179,6 +179,14 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
             )}
             {isSignedIn && (
               <div className="flex flex-col gap-3 mt-6 pt-6 border-t border-slate-100">
+                <Link
+                  href="/dashboard/my-courses"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 py-3 px-4 rounded-2xl bg-violet-50 text-violet-700 font-bold text-sm hover:bg-violet-100 transition-colors"
+                >
+                  <BookOpen className="w-4 h-4 text-violet-600" />
+                  My Purchased Courses
+                </Link>
                 <div className="flex items-center gap-3 px-2">
                   <UserButton
                     appearance={{ elements: { avatarBox: 'w-10 h-10' } }}
