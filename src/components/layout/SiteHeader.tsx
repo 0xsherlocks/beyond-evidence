@@ -89,12 +89,6 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
               {/* Auth buttons & My Courses link */}
               {isSignedIn ? (
                 <div className="flex items-center gap-3">
-                  <Link
-                    href="/dashboard/my-courses"
-                    className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200 text-[11px] font-bold uppercase tracking-[0.12em] hover:bg-violet-100 transition-all shadow-xs"
-                  >
-                    My Courses
-                  </Link>
                   <UserButton
                     appearance={{
                       elements: {
@@ -103,11 +97,13 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
                     }}
                   >
                     <UserButton.MenuItems>
-                      <UserButton.Link
-                        label="My Purchased Courses"
+                      <UserButton.Action label="manageAccount" />
+                      <UserButton.Action
+                        label="Purchased Courses"
                         labelIcon={<BookOpen className="w-4 h-4 text-violet-600" />}
-                        href="/dashboard/my-courses"
+                        open="purchased-courses"
                       />
+                      <UserButton.Action label="signOut" />
                     </UserButton.MenuItems>
                     <UserButton.UserProfilePage
                       label="Purchased Courses"
@@ -183,24 +179,18 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
             )}
             {isSignedIn && (
               <div className="flex flex-col gap-3 mt-6 pt-6 border-t border-slate-100">
-                <Link
-                  href="/dashboard/my-courses"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-3 py-3 px-4 rounded-2xl bg-violet-50 text-violet-700 font-bold text-sm hover:bg-violet-100 transition-colors"
-                >
-                  <BookOpen className="w-4 h-4 text-violet-600" />
-                  My Purchased Courses
-                </Link>
                 <div className="flex items-center gap-3 px-2">
                   <UserButton
                     appearance={{ elements: { avatarBox: 'w-10 h-10' } }}
                   >
                     <UserButton.MenuItems>
-                      <UserButton.Link
-                        label="My Purchased Courses"
+                      <UserButton.Action label="manageAccount" />
+                      <UserButton.Action
+                        label="Purchased Courses"
                         labelIcon={<BookOpen className="w-4 h-4 text-violet-600" />}
-                        href="/dashboard/my-courses"
+                        open="purchased-courses"
                       />
+                      <UserButton.Action label="signOut" />
                     </UserButton.MenuItems>
                     <UserButton.UserProfilePage
                       label="Purchased Courses"
