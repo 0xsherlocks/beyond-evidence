@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, Database, X, LogIn } from 'lucide-react';
+import { Menu, Database, X, LogIn, BookOpen } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useState, useEffect } from 'react';
 import Logo from '../Logo';
@@ -95,13 +95,20 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
                     My Courses
                   </Link>
                   <UserButton
-                    afterSignOutUrl="/"
                     appearance={{
                       elements: {
                         avatarBox: 'w-8 h-8',
                       },
                     }}
-                  />
+                  >
+                    <UserButton.MenuItems>
+                      <UserButton.Link
+                        label="My Purchased Courses"
+                        labelIcon={<BookOpen className="w-4 h-4 text-violet-600" />}
+                        href="/dashboard/my-courses"
+                      />
+                    </UserButton.MenuItems>
+                  </UserButton>
                 </div>
               ) : (
                 <SignInButton mode="modal">
@@ -167,9 +174,29 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
               </div>
             )}
             {isSignedIn && (
-              <div className="flex items-center gap-3 mt-6 pt-6 border-t border-slate-100">
-                <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: 'w-10 h-10' } }} />
-                <span className="text-sm font-bold text-slate-700">My Account</span>
+              <div className="flex flex-col gap-3 mt-6 pt-6 border-t border-slate-100">
+                <Link
+                  href="/dashboard/my-courses"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 py-3 px-4 rounded-2xl bg-violet-50 text-violet-700 font-bold text-sm hover:bg-violet-100 transition-colors"
+                >
+                  <BookOpen className="w-4 h-4 text-violet-600" />
+                  My Purchased Courses
+                </Link>
+                <div className="flex items-center gap-3 px-2">
+                  <UserButton
+                    appearance={{ elements: { avatarBox: 'w-10 h-10' } }}
+                  >
+                    <UserButton.MenuItems>
+                      <UserButton.Link
+                        label="My Purchased Courses"
+                        labelIcon={<BookOpen className="w-4 h-4 text-violet-600" />}
+                        href="/dashboard/my-courses"
+                      />
+                    </UserButton.MenuItems>
+                  </UserButton>
+                  <span className="text-sm font-bold text-slate-700">My Account</span>
+                </div>
               </div>
             )}
           </nav>
