@@ -9,6 +9,7 @@ import Logo from '../Logo';
 import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { useAuth } from '@clerk/nextjs';
 import ProtectedLink from '../ProtectedLink';
+import PurchasedCoursesTab from '../PurchasedCoursesTab';
 
 interface NavLink {
   label: string;
@@ -108,6 +109,13 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
                         href="/dashboard/my-courses"
                       />
                     </UserButton.MenuItems>
+                    <UserButton.UserProfilePage
+                      label="Purchased Courses"
+                      url="purchased-courses"
+                      labelIcon={<BookOpen className="w-4 h-4 text-violet-600" />}
+                    >
+                      <PurchasedCoursesTab />
+                    </UserButton.UserProfilePage>
                   </UserButton>
                 </div>
               ) : (
@@ -194,6 +202,13 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
                         href="/dashboard/my-courses"
                       />
                     </UserButton.MenuItems>
+                    <UserButton.UserProfilePage
+                      label="Purchased Courses"
+                      url="purchased-courses"
+                      labelIcon={<BookOpen className="w-4 h-4 text-violet-600" />}
+                    >
+                      <PurchasedCoursesTab />
+                    </UserButton.UserProfilePage>
                   </UserButton>
                   <span className="text-sm font-bold text-slate-700">My Account</span>
                 </div>
