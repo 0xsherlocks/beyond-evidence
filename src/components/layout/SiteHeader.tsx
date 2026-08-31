@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, Database, X, LogIn } from 'lucide-react';
+import { Menu, Database, X, LogIn, BookOpen } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useState, useEffect } from 'react';
 import Logo from '../Logo';
 import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { useAuth } from '@clerk/nextjs';
 import ProtectedLink from '../ProtectedLink';
+import PurchasedCoursesTab from '../PurchasedCoursesTab';
 
 interface NavLink {
   label: string;
@@ -88,20 +89,30 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
               {/* Auth buttons & My Courses link */}
               {isSignedIn ? (
                 <div className="flex items-center gap-3">
-                  <Link
-                    href="/dashboard/my-courses"
-                    className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200 text-[11px] font-bold uppercase tracking-[0.12em] hover:bg-violet-100 transition-all shadow-xs"
-                  >
-                    My Courses
-                  </Link>
                   <UserButton
-                    afterSignOutUrl="/"
                     appearance={{
                       elements: {
                         avatarBox: 'w-8 h-8',
                       },
                     }}
-                  />
+                  >
+                    <UserButton.MenuItems>
+                      <UserButton.Action label="manageAccount" />
+                      <UserButton.Action
+                        label="Purchased Courses"
+                        labelIcon={<BookOpen className="w-4 h-4 text-violet-600" />}
+                        open="purchased-courses"
+                      />
+                      <UserButton.Action label="signOut" />
+                    </UserButton.MenuItems>
+                    <UserButton.UserProfilePage
+                      label="Purchased Courses"
+                      url="purchased-courses"
+                      labelIcon={<BookOpen className="w-4 h-4 text-violet-600" />}
+                    >
+                      <PurchasedCoursesTab />
+                    </UserButton.UserProfilePage>
+                  </UserButton>
                 </div>
               ) : (
                 <SignInButton mode="modal">
@@ -167,9 +178,30 @@ export default function SiteHeader({ headerLinks }: { headerLinks?: NavLink[] })
               </div>
             )}
             {isSignedIn && (
-              <div className="flex items-center gap-3 mt-6 pt-6 border-t border-slate-100">
-                <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: 'w-10 h-10' } }} />
-                <span className="text-sm font-bold text-slate-700">My Account</span>
+              <div className="flex flex-col gap-3 mt-6 pt-6 border-t border-slate-100">
+                <div className="flex items-center gap-3 px-2">
+                  <UserButton
+                    appearance={{ elements: { avatarBox: 'w-10 h-10' } }}
+                  >
+                    <UserButton.MenuItems>
+                      <UserButton.Action label="manageAccount" />
+                      <UserButton.Action
+                        label="Purchased Courses"
+                        labelIcon={<BookOpen className="w-4 h-4 text-violet-600" />}
+                        open="purchased-courses"
+                      />
+                      <UserButton.Action label="signOut" />
+                    </UserButton.MenuItems>
+                    <UserButton.UserProfilePage
+                      label="Purchased Courses"
+                      url="purchased-courses"
+                      labelIcon={<BookOpen className="w-4 h-4 text-violet-600" />}
+                    >
+                      <PurchasedCoursesTab />
+                    </UserButton.UserProfilePage>
+                  </UserButton>
+                  <span className="text-sm font-bold text-slate-700">My Account</span>
+                </div>
               </div>
             )}
           </nav>
