@@ -22,6 +22,12 @@ export async function GET(request) {
     return NextResponse.json({ error: "Missing slug or packageId" }, { status: 400 });
   }
 
+  const allPurchases = await prisma.purchase.findMany({
+    where: { userId, courseId: slug, status: "paid" },
+    select: { packageId: true },
+  });
+  const purchasedPackageIds = allPurchases.map((p) => p.packageId);
+
   const purchase = await prisma.purchase.findFirst({
     where: {
       userId,
@@ -33,7 +39,7 @@ export async function GET(request) {
   });
 
   if (!purchase) {
-    return NextResponse.json({ hasAccess: false });
+    return NextResponse.json({ hasAccess: false, purchasedPackageIds });
   }
 
   const material = await sanityClient.fetch(
@@ -55,6 +61,7 @@ export async function GET(request) {
 
   return NextResponse.json({
     hasAccess: true,
+    purchasedPackageIds,
     courseId: purchase.courseId,
     courseName: purchase.courseName,
     packageId: purchase.packageId,
