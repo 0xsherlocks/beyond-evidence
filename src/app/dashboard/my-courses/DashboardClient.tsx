@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { BookOpen, GraduationCap, LogOut, ChevronRight, Clock, Award } from 'lucide-react'
+import { BookOpen, GraduationCap, LogOut, ChevronRight, Clock, FileText, Loader2 } from 'lucide-react'
 import { useClerk } from '@clerk/nextjs'
+import { useState } from 'react'
+import SecurePdfViewer from '@/src/components/SecurePdfViewer'
 
 interface Course {
   id: string
@@ -11,6 +13,8 @@ interface Course {
   courseSlug: string
   examType: string
   purchasedAt: string
+  isStudyMaterial: boolean
+  packageId: string | null
 }
 
 interface DashboardClientProps {
@@ -30,6 +34,36 @@ const EXAM_COLORS: Record<string, string> = {
 
 export default function DashboardClient({ userName, userEmail, userAvatar, courses }: DashboardClientProps) {
   const { signOut } = useClerk()
+  const [fetchingDocsFor, setFetchingDocsFor] = useState<string | null>(null)
+  const [activeMaterial, setActiveMaterial] = useState<{ courseName: string; links: DocumentLink[] } | null>(null)
+  const [activePdf, setActivePdf] = useState<DocumentLink | null>(null)
+
+  const openStudyMaterial = async (course: Course) => {
+    if (!course.packageId) return
+
+    setFetchingDocsFor(course.id)
+    try {
+      const response = await fetch(
+        `/api/study-material-access?slug=${encodeURIComponent(course.courseSlug)}&packageId=${encodeURIComponent(course.packageId)}`,
+        { cache: 'no-store' },
+      )
+      const data = await response.json().catch(() => null)
+
+      if (!response.ok) {
+        throw new Error(data?.error || 'Unable to load your notes.')
+      }
+      if (!data?.downloadLinks?.length) {
+        throw new Error('No documents have been added to this package yet.')
+      }
+
+      setActiveMaterial({ courseName: course.courseName, links: data.downloadLinks })
+    } catch (error) {
+      console.error('Error opening study material:', error)
+      alert(error instanceof Error ? error.message : 'Unable to load your notes. Please try again.')
+    } finally {
+      setFetchingDocsFor(null)
+    }
+  }
 
   const initials = userName
     .split(' ')
@@ -72,16 +106,31 @@ export default function DashboardClient({ userName, userEmail, userAvatar, cours
             <p className="text-slate-500 text-xs px-3">No courses yet.</p>
           ) : (
             courses.map((c) => (
-              <Link
-                key={c.id}
-                href={`/reader/${c.courseSlug}`}
-                id={`sidebar-link-${c.courseSlug}`}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:text-white text-xs transition-colors group"
-                style={{ fontFamily: 'inherit' }}
-              >
-                <BookOpen className="w-3.5 h-3.5 shrink-0 text-violet-400 group-hover:text-violet-300" />
-                <span className="truncate">{c.courseName}</span>
-              </Link>
+              c.isStudyMaterial ? (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => void openStudyMaterial(c)}
+                  disabled={fetchingDocsFor === c.id}
+                  id={`sidebar-link-${c.courseSlug}`}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-left text-slate-300 hover:text-white text-xs transition-colors group disabled:opacity-60"
+                  style={{ fontFamily: 'inherit' }}
+                >
+                  {fetchingDocsFor === c.id ? <Loader2 className="w-3.5 h-3.5 shrink-0 animate-spin text-violet-400" /> : <BookOpen className="w-3.5 h-3.5 shrink-0 text-violet-400 group-hover:text-violet-300" />}
+                  <span className="truncate">{c.courseName}</span>
+                </button>
+              ) : (
+                <Link
+                  key={c.id}
+                  href={`/reader/${c.courseSlug}`}
+                  id={`sidebar-link-${c.courseSlug}`}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:text-white text-xs transition-colors group"
+                  style={{ fontFamily: 'inherit' }}
+                >
+                  <BookOpen className="w-3.5 h-3.5 shrink-0 text-violet-400 group-hover:text-violet-300" />
+                  <span className="truncate">{c.courseName}</span>
+                </Link>
+              )
             ))
           )}
         </nav>
@@ -148,17 +197,45 @@ export default function DashboardClient({ userName, userEmail, userAvatar, cours
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
               {courses.map((course) => (
-                <CourseCard key={course.id} course={course} />
+                <CourseCard key={course.id} course={course} onOpenStudyMaterial={openStudyMaterial} fetchingDocsFor={fetchingDocsFor} />
               ))}
             </div>
           )}
         </div>
       </main>
+
+      {activeMaterial && (
+        <DocumentPicker
+          material={activeMaterial}
+          onClose={() => setActiveMaterial(null)}
+          onOpenPdf={setActivePdf}
+        />
+      )}
+      {activePdf && (
+        <SecurePdfViewer
+          url={activePdf.url}
+          title={activePdf.title}
+          onClose={() => setActivePdf(null)}
+        />
+      )}
     </div>
   )
 }
 
-function CourseCard({ course }: { course: Course }) {
+interface DocumentLink {
+  title?: string
+  url: string
+}
+
+function CourseCard({
+  course,
+  onOpenStudyMaterial,
+  fetchingDocsFor,
+}: {
+  course: Course
+  onOpenStudyMaterial: (course: Course) => Promise<void>
+  fetchingDocsFor: string | null
+}) {
   const badgeClass = EXAM_COLORS[course.examType] ?? 'bg-slate-100 text-slate-600 border-slate-200'
   const date = new Date(course.purchasedAt).toLocaleDateString('en-IN', {
     day: 'numeric', month: 'short', year: 'numeric',
@@ -195,15 +272,57 @@ function CourseCard({ course }: { course: Course }) {
         </div>
 
         {/* CTA */}
-        <Link
-          id={`open-notes-${course.courseSlug}`}
-          href={`/reader/${course.courseSlug}`}
-          className="mt-auto flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 hover:scale-[1.02] active:scale-95"
-          style={{ background: '#6C4EF6' }}
-        >
-          <BookOpen className="w-4 h-4" />
-          Open Notes
-        </Link>
+        {course.isStudyMaterial ? (
+          <button
+            id={`open-notes-${course.courseSlug}`}
+            type="button"
+            onClick={() => void onOpenStudyMaterial(course)}
+            disabled={fetchingDocsFor === course.id}
+            className="mt-auto flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 hover:scale-[1.02] active:scale-95 disabled:cursor-wait disabled:opacity-60"
+            style={{ background: '#6C4EF6' }}
+          >
+            {fetchingDocsFor === course.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <BookOpen className="w-4 h-4" />}
+            Open Notes
+          </button>
+        ) : (
+          <Link
+            id={`open-notes-${course.courseSlug}`}
+            href={`/reader/${course.courseSlug}`}
+            className="mt-auto flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 hover:scale-[1.02] active:scale-95"
+            style={{ background: '#6C4EF6' }}
+          >
+            <BookOpen className="w-4 h-4" />
+            Open Notes
+          </Link>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function DocumentPicker({ material, onClose, onOpenPdf }: {
+  material: { courseName: string; links: DocumentLink[] }
+  onClose: () => void
+  onOpenPdf: (link: DocumentLink) => void
+}) {
+  return (
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Select a document">
+      <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-violet-600">Your notes</p>
+            <h2 className="mt-1 text-lg font-bold text-slate-900">{material.courseName}</h2>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900">Close</button>
+        </div>
+        <div className="space-y-2">
+          {material.links.map((link, index) => (
+            <button key={`${link.url}-${index}`} type="button" onClick={() => onOpenPdf(link)} className="flex w-full items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition-colors hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700">
+              <FileText className="h-5 w-5 shrink-0 text-violet-600" />
+              {link.title || `Document ${index + 1}`}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   )
