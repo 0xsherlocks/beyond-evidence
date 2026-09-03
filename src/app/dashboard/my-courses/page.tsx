@@ -18,8 +18,10 @@ export default async function MyCoursesPage() {
     id: p.id,
     courseName: p.courseName,
     courseSlug: p.courseSlug || p.courseId,
-    examType: p.examType || 'UGC NET',
+    examType: p.examType || p.packageName || 'Premium Notes',
     purchasedAt: p.createdAt.toISOString(),
+    isStudyMaterial: Boolean(p.packageId),
+    packageId: p.packageId || null,
   }))
 
   return (
