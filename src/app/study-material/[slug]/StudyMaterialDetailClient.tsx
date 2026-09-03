@@ -93,6 +93,7 @@ export default function StudyMaterialDetailClient({
   const [errorMessage, setErrorMessage] = useState('');
   const [paidAccess, setPaidAccess] = useState<PaidAccess | null>(null);
   const [activeDoc, setActiveDoc] = useState<{ url: string; title?: string } | null>(null);
+  const [purchasedPackageIds, setPurchasedPackageIds] = useState<string[]>([]);
 
 
   const selectedPkg = packages.find((pkg: any) => pkg.id === selectedPackage);
@@ -125,9 +126,17 @@ export default function StudyMaterialDetailClient({
 
         const access = await response.json();
 
-        if (!cancelled && access.hasAccess) {
-          setPaidAccess(access);
-          setStatus('success');
+        if (!cancelled) {
+          if (access.purchasedPackageIds) {
+            setPurchasedPackageIds(access.purchasedPackageIds);
+          }
+          if (access.hasAccess) {
+            setPaidAccess(access);
+            setStatus('success');
+          } else {
+            setPaidAccess(null);
+            setStatus('idle');
+          }
         }
       } catch (error) {
         // Checkout still performs full server-side checks; this only restores access on revisit.
@@ -326,39 +335,53 @@ export default function StudyMaterialDetailClient({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {packages.map((pkg: any, index: number) => {
                 const colorClass = getColorClass(index);
+                const isPurchased = purchasedPackageIds.includes(pkg.id);
                 return (
                   <motion.button
                     key={pkg.id}
                     type="button"
                     variants={fadeUp}
-                    onClick={() => handlePackageSelect(pkg.id)}
+                    onClick={() => {
+                      if (isPurchased) {
+                        window.location.href = '/dashboard/my-courses';
+                      } else {
+                        handlePackageSelect(pkg.id);
+                      }
+                    }}
                     className={cn(
                       'relative rounded-3xl p-7 text-left flex flex-col gap-4 border-2 transition-all duration-500 group',
-                      selectedPackage === pkg.id
-                        ? 'border-accent shadow-xl shadow-accent/20 scale-[1.02]'
-                        : 'border-slate-100 bg-white hover:border-accent/30 hover:shadow-lg'
+                      isPurchased
+                        ? 'border-green-500 shadow-xl shadow-green-500/20 bg-green-50/30'
+                        : selectedPackage === pkg.id
+                          ? 'border-accent shadow-xl shadow-accent/20 scale-[1.02]'
+                          : 'border-slate-100 bg-white hover:border-accent/30 hover:shadow-lg'
                     )}
                   >
-                    {pkg.badge && (
+                    {isPurchased ? (
+                      <span className="absolute top-4 right-4 px-3 py-1 rounded-full bg-green-500 text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Purchased
+                      </span>
+                    ) : pkg.badge ? (
                       <span className="absolute top-4 right-4 px-3 py-1 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-widest">
                         {pkg.badge}
                       </span>
-                    )}
-                    <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center text-white bg-gradient-to-br', colorClass)}>
-                      <BadgeIndianRupee className="w-5 h-5" />
+                    ) : null}
+                    
+                    <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center text-white bg-gradient-to-br', isPurchased ? 'from-green-500 to-emerald-600' : colorClass)}>
+                      {isPurchased ? <CheckCircle2 className="w-5 h-5" /> : <BadgeIndianRupee className="w-5 h-5" />}
                     </div>
                     <div>
                       <p className="font-display font-bold text-slate-900 text-lg">{pkg.title}</p>
                       <p className="text-slate-400 text-sm font-light">{pkg.subtitle}</p>
                     </div>
-                    <p className={cn('text-3xl font-display font-bold bg-gradient-to-r bg-clip-text text-transparent', colorClass)}>
+                    <p className={cn('text-3xl font-display font-bold bg-gradient-to-r bg-clip-text text-transparent', isPurchased ? 'from-green-500 to-emerald-600' : colorClass)}>
                       {pkg.price}
                     </p>
                     {pkg.featuresList && pkg.featuresList.length > 0 && (
                       <ul className="space-y-2 border-t border-slate-100 pt-4">
                         {pkg.featuresList.map((feature: string, i: number) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-slate-600 font-light">
-                            <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                            <CheckCircle2 className={cn("w-4 h-4 shrink-0 mt-0.5", isPurchased ? "text-green-500" : "text-accent")} />
                             {feature}
                           </li>
                         ))}
@@ -367,11 +390,11 @@ export default function StudyMaterialDetailClient({
                     <span
                       className={cn(
                         'inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest mt-auto',
-                        selectedPackage === pkg.id ? 'text-accent' : 'text-slate-400 group-hover:text-accent transition-colors'
+                        isPurchased ? 'text-green-600' : selectedPackage === pkg.id ? 'text-accent' : 'text-slate-400 group-hover:text-accent transition-colors'
                       )}
                     >
-                      {selectedPackage === pkg.id ? 'Selected' : 'Select Package'}
-                      {selectedPackage !== pkg.id && <ArrowRight className="w-3 h-3" />}
+                      {isPurchased ? 'Go to My Courses' : selectedPackage === pkg.id ? 'Selected' : 'Select Package'}
+                      <ArrowRight className="w-3 h-3" />
                     </span>
                   </motion.button>
                 );
@@ -397,9 +420,9 @@ export default function StudyMaterialDetailClient({
               </div>
 
               <AnimatePresence mode="wait">
-                {status === 'success' ? (
+                {purchasedPackageIds.includes(selectedPackage) ? (
                   <motion.div
-                    key="success"
+                    key="purchased-state"
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
@@ -408,31 +431,17 @@ export default function StudyMaterialDetailClient({
                     <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
                       <CheckCircle2 className="w-10 h-10 text-green-500" />
                     </div>
-                    <h3 className="text-2xl font-display font-bold text-slate-900 mb-2">Payment Successful</h3>
+                    <h3 className="text-2xl font-display font-bold text-slate-900 mb-2">You Own This Package</h3>
                     <p className="text-slate-500 font-light text-sm leading-relaxed max-w-sm mx-auto mb-8">
-                      Your purchase is verified. Open your documents in the secure viewer below — each copy is watermarked with your account details.
+                      You have already purchased access to this study material. Go to your dashboard to access your secure notes.
                     </p>
-
-                    {paidAccess?.downloadLinks && paidAccess.downloadLinks.length > 0 ? (
-                      <div className="space-y-3 text-left">
-                        {paidAccess.downloadLinks.map((link, index) => (
-                          <button
-                            key={`${link.url}-${index}`}
-                            type="button"
-                            onClick={() => link.url && setActiveDoc({ url: link.url, title: link.title })}
-                            className="w-full flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm font-bold text-slate-700 transition-all hover:border-accent hover:text-accent hover:shadow-lg"
-                          >
-                            <span>{link.title || `Document ${index + 1}`}</span>
-                            <FileText className="w-4 h-4 shrink-0" />
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-500 font-light leading-relaxed">
-                        Payment is recorded as paid. Add package download links in Sanity Studio to show them here.
-                      </div>
-                    )}
-
+                    <Link
+                      href="/dashboard/my-courses"
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-green-500 text-white font-bold hover:bg-green-600 transition-colors shadow-lg shadow-green-500/20"
+                    >
+                      <BookOpen className="w-4 h-4 shrink-0" />
+                      Go to My Courses
+                    </Link>
                   </motion.div>
                 ) : (
                   <motion.form
