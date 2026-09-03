@@ -90,27 +90,19 @@ export async function GET(request) {
 
     const contentLength = Number(sourceResponse.headers.get("content-length") || 0);
     if (contentLength && contentLength > MAX_PDF_BYTES) {
-      await logAccess(
-        { userId, purchaseId: purchase.id, slug, packageId, index, outcome: "denied", reason: "too_large" },
-        request
-      );
-      return NextResponse.json({ error: "Document is too large to serve securely." }, { status: 413 });
+      return NextResponse.redirect(url);
     }
 
     sourceBytes = await sourceResponse.arrayBuffer();
     if (sourceBytes.byteLength > MAX_PDF_BYTES) {
-      await logAccess(
-        { userId, purchaseId: purchase.id, slug, packageId, index, outcome: "denied", reason: "too_large" },
-        request
-      );
-      return NextResponse.json({ error: "Document is too large to serve securely." }, { status: 413 });
+      return NextResponse.redirect(url);
     }
   } catch (error) {
     await logAccess(
-      { userId, purchaseId: purchase.id, slug, packageId, index, outcome: "error", reason: "source_fetch_failed" },
+      { userId, purchaseId: purchase.id, slug, packageId, index, outcome: "error", reason: "source_fetch_failed_redirecting" },
       request
     );
-    return NextResponse.json({ error: "Unable to retrieve the document." }, { status: 502 });
+    return NextResponse.redirect(url);
   }
 
   // Resolve buyer identity for the watermark.
@@ -135,10 +127,10 @@ export async function GET(request) {
     });
   } catch (error) {
     await logAccess(
-      { userId, purchaseId: purchase.id, slug, packageId, index, outcome: "error", reason: "watermark_failed" },
+      { userId, purchaseId: purchase.id, slug, packageId, index, outcome: "error", reason: "watermark_failed_redirecting" },
       request
     );
-    return NextResponse.json({ error: "Unable to prepare the document." }, { status: 502 });
+    return NextResponse.redirect(url);
   }
 
   await logAccess(
