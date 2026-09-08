@@ -37,9 +37,9 @@ export async function GET(request: NextRequest) {
   try {
     const settings = await getNotificationPage();
     const configured = (settings?.rssFeeds || []).filter((feed: any) => feed?.url && feed.enabled !== false);
-    const deduped = new Map(feeds.map(feed => [feed.url, feed]));
-    configured.forEach((feed: any) => deduped.set(feed.url, { url: feed.url, sourceName: feed.sourceName }));
-    feeds = [...deduped.values()];
+    // Once feeds are configured in Sanity, Sanity becomes the source of truth.
+    // Until then, the existing defaults keep the first sync useful.
+    if (configured.length) feeds = configured.map((feed: any) => ({ url: feed.url, sourceName: feed.sourceName }));
   } catch (error) { errors.push(`Sanity feed settings: ${error instanceof Error ? error.message : 'failed'}`); }
   for (const feedConfig of feeds) {
     const feedUrl = feedConfig.url;
