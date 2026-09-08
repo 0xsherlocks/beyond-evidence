@@ -86,10 +86,16 @@ export const studyMaterial = defineType({
         {
           type: 'object',
           fields: [
-            defineField({ name: 'id', title: 'Package ID', type: 'string', description: 'Stable ID used by checkout. Examples: notes, mock, combo.' }),
-            defineField({ name: 'title', title: 'Package Title', type: 'string' }),
+            defineField({
+              name: 'id',
+              title: 'Package ID',
+              type: 'string',
+              description: 'Stable checkout ID. Use lowercase letters, numbers, and hyphens only; do not change it after customers purchase.',
+              validation: (Rule) => Rule.required().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+            }),
+            defineField({ name: 'title', title: 'Package Title', type: 'string', validation: (Rule) => Rule.required() }),
             defineField({ name: 'subtitle', title: 'Subtitle', type: 'string' }),
-            defineField({ name: 'price', title: 'Price Display String', type: 'string', description: 'Display text, e.g. Rs. 999 or INR 999.' }),
+            defineField({ name: 'price', title: 'Price Display String', type: 'string', description: 'Display text, e.g. ₹899.', validation: (Rule) => Rule.required() }),
             defineField({
               name: 'priceAmount',
               title: 'Price Amount',
@@ -113,9 +119,20 @@ export const studyMaterial = defineType({
                 {
                   type: 'object',
                   fields: [
-                    defineField({ name: 'title', title: 'Title', type: 'string' }),
-                    defineField({ name: 'url', title: 'URL', type: 'url' }),
+                    defineField({ name: 'title', title: 'Title', type: 'string', validation: (Rule) => Rule.required() }),
+                    defineField({ name: 'url', title: 'External PDF URL', type: 'url', description: 'Use only for a direct, publicly reachable PDF URL.' }),
+                    defineField({
+                      name: 'file',
+                      title: 'Upload PDF',
+                      type: 'file',
+                      options: { accept: 'application/pdf,.pdf' },
+                      description: 'Recommended. Upload the PDF directly to Sanity. Only PDFs are supported by the protected viewer.',
+                    }),
                   ],
+                  validation: (Rule) => Rule.custom((value: any) => {
+                    if (!value?.url && !value?.file?.asset) return 'Add either an external PDF URL or an uploaded PDF.'
+                    return true
+                  }),
                   preview: {
                     select: {
                       title: 'title',

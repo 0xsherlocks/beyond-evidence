@@ -11,6 +11,22 @@ export const runtime = "nodejs";
 // Guard against watermarking huge files in memory (25 MB).
 const MAX_PDF_BYTES = 25 * 1024 * 1024;
 
+function resolvePdfSourceUrl(url) {
+  try {
+    const parsed = new URL(url);
+    const documentMatch = parsed.pathname.match(/^\/document\/d\/([^/]+)/);
+
+    // Sanity stores the editor/share URL commonly copied from Google Docs. The
+    // viewer needs the actual PDF stream, which Google exposes via this route.
+    if (parsed.hostname === "docs.google.com" && documentMatch) {
+      return `https://docs.google.com/document/d/${documentMatch[1]}/export?format=pdf`;
+    }
+  } catch {
+    // Let fetch handle malformed URLs below and return a controlled error.
+  }
+  return url;
+}
+
 export async function GET(request) {
   const { userId } = await auth();
 
@@ -63,14 +79,15 @@ export async function GET(request) {
   const material = await sanityClient.fetch(
     `*[_type == "studyMaterial" && slug.current == $slug][0]{
       packages[id == $packageId][0]{
-        downloadLinks[]{url}
+        downloadLinks[]{url, "fileUrl": file.asset->url}
       }
     }`,
     { slug, packageId },
     { cache: "no-store" }
   );
 
-  const url = material?.packages?.downloadLinks?.[index]?.url;
+  const selectedLink = material?.packages?.downloadLinks?.[index];
+  const url = selectedLink?.url || selectedLink?.fileUrl;
 
   if (!url) {
     await logAccess(
@@ -83,26 +100,31 @@ export async function GET(request) {
   // Fetch the source PDF server-side (the raw URL is never exposed to client).
   let sourceBytes;
   try {
-    const sourceResponse = await fetch(url, { cache: "no-store" });
+    const sourceResponse = await fetch(resolvePdfSourceUrl(url), { cache: "no-store" });
     if (!sourceResponse.ok) {
       throw new Error(`Source responded ${sourceResponse.status}`);
     }
 
+    const contentType = sourceResponse.headers.get("content-type") || "";
+    if (!contentType.toLowerCase().includes("application/pdf")) {
+      throw new Error(`Source is not a PDF (${contentType || "unknown content type"})`);
+    }
+
     const contentLength = Number(sourceResponse.headers.get("content-length") || 0);
     if (contentLength && contentLength > MAX_PDF_BYTES) {
-      return NextResponse.redirect(url);
+      throw new Error("Source PDF exceeds the 25 MB limit");
     }
 
     sourceBytes = await sourceResponse.arrayBuffer();
     if (sourceBytes.byteLength > MAX_PDF_BYTES) {
-      return NextResponse.redirect(url);
+      throw new Error("Source PDF exceeds the 25 MB limit");
     }
   } catch (error) {
     await logAccess(
-      { userId, purchaseId: purchase.id, slug, packageId, index, outcome: "error", reason: "source_fetch_failed_redirecting" },
+      { userId, purchaseId: purchase.id, slug, packageId, index, outcome: "error", reason: "source_fetch_failed" },
       request
     );
-    return NextResponse.redirect(url);
+    return NextResponse.json({ error: "The source document could not be loaded as a PDF. Upload a PDF or use a direct PDF URL." }, { status: 422 });
   }
 
   // Resolve buyer identity for the watermark.
@@ -127,10 +149,10 @@ export async function GET(request) {
     });
   } catch (error) {
     await logAccess(
-      { userId, purchaseId: purchase.id, slug, packageId, index, outcome: "error", reason: "watermark_failed_redirecting" },
+      { userId, purchaseId: purchase.id, slug, packageId, index, outcome: "error", reason: "watermark_failed" },
       request
     );
-    return NextResponse.redirect(url);
+    return NextResponse.json({ error: "The PDF could not be prepared for secure viewing." }, { status: 422 });
   }
 
   await logAccess(

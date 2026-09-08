@@ -37,7 +37,7 @@ const materials = [
       { title: 'Digital PDF Format', description: 'Instantly downloadable PDFs for easy reading on any device, anytime - perfect for quick revision.', iconName: 'FileText' },
     ],
     packages: [
-      { id: 'notes', title: 'Notes Only', subtitle: 'All 10 Units', price: '\u20b9999', priceAmount: 999, featuresList: ['Complete Notes - All 10 Units', 'Structured and Easy-to-Revise Format', 'PDF Digital Download', 'Latest NET/JRF Courses Aligned'] },
+      { id: 'notes', title: 'Notes Only', subtitle: 'All 10 Units', price: '\u20b9899', priceAmount: 899, featuresList: ['Complete Notes - All 10 Units', 'Structured and Easy-to-Revise Format', 'PDF Digital Download', 'Latest NET/JRF Courses Aligned'] },
       { id: 'mock', title: 'Mock Tests Only', subtitle: 'Full Test Series', price: '\u20b9666', priceAmount: 666, featuresList: ['Mock Test Series', 'Concept Strengthening Questions', 'Answer Keys Included', 'Exam-Pattern Based'] },
       { id: 'combo', title: 'Combo Pack', subtitle: 'Notes + Mock Tests', price: '\u20b91499', priceAmount: 1499, badge: 'BEST VALUE', featuresList: ['Complete Notes - All 10 Units', 'Full Mock Test Series', 'PDF Digital Downloads', 'Priority Support'] },
     ],
@@ -110,14 +110,14 @@ const materials = [
 ]
 
 const existingDocs = await client.fetch(
-  '*[_type == "studyMaterial" && slug.current in $slugs]{_id, "slug": slug.current}',
+  '*[_type == "studyMaterial" && slug.current in $slugs]{_id, "slug": slug.current, packages[]{id, downloadLinks}}',
   { slugs: materials.map((material) => material.slug) }
 )
 const existingBySlug = new Map(existingDocs.map((doc) => [doc.slug, doc._id]))
 
 if (process.argv.includes('--verify')) {
   const docs = await client.fetch(
-    '*[_type == "studyMaterial" && slug.current in $slugs] | order(order asc){title, "slug": slug.current, packages[]{id, title, price, priceAmount}, order}',
+    '*[_type == "studyMaterial" && slug.current in $slugs] | order(order asc){title, "slug": slug.current, packages[]{id, title, price, priceAmount, downloadLinks[]{title, url, "fileUrl": file.asset->url}}, order}',
     { slugs: materials.map((material) => material.slug) }
   )
   console.log(JSON.stringify(docs, null, 2))
@@ -132,7 +132,9 @@ function keyedItems(items, prefix) {
 }
 
 for (const material of materials) {
-  const id = existingBySlug.get(material.slug) || `studyMaterial.${material.slug}`
+  const existing = existingBySlug.get(material.slug)
+  const id = existing?._id || `studyMaterial.${material.slug}`
+  const existingPackages = new Map((existing?.packages || []).map((pkg) => [pkg.id, pkg]))
   const fields = {
     title: material.title,
     slug: { _type: 'slug', current: material.slug },
@@ -140,11 +142,16 @@ for (const material of materials) {
     iconName: material.iconName,
     introParagraphs: material.introParagraphs,
     features: keyedItems(material.features, 'feature'),
-    packages: keyedItems(material.packages, 'package'),
+    packages: keyedItems(material.packages, 'package').map((pkg) => {
+      const existingPackage = existingPackages.get(pkg.id)
+      return existingPackage?.downloadLinks
+        ? { ...pkg, downloadLinks: existingPackage.downloadLinks }
+        : pkg
+    }),
     order: material.order,
   }
 
-  if (existingBySlug.has(material.slug)) {
+  if (existing) {
     await client.patch(id).set(fields).commit()
     console.log(`Updated ${material.slug}`)
   } else {

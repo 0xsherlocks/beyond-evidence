@@ -46,3 +46,42 @@ model AccessLog {
   @@index([purchaseId])
   @@index([createdAt])
 }
+
+model Notification {
+  id                   String   @id @default(cuid())
+  externalId           String   @unique
+  type                 String
+  title                String
+  excerpt              String?
+  link                 String?
+  source               String
+  publishedAt          DateTime?
+  isNew                Boolean  @default(true)
+  acronym              String?
+  fullName             String?
+  location             String?
+  submissionDeadline   DateTime?
+  notificationDate     DateTime?
+  cameraReadyDate      DateTime?
+  startDate            DateTime?
+  endDate              DateTime?
+  topics               String[] @default([])
+  cfpLink              String?
+  conferenceWebPage    String?
+  submissionLink       String?
+  description          String?
+  submissionGuidelines String?
+  importantDates       Json?
+  topicSections        Json?
+  committees           Json?
+  publication          String?
+  venue                String?
+  contactEmail         String?
+  lastUpdated          DateTime @default(now()) @updatedAt
+  lastDetailFetch      DateTime?
+
+  @@index([type, publishedAt])
+  @@index([type, isNew])
+  @@index([acronym])
+  @@index([submissionDeadline])
+}
