@@ -110,7 +110,7 @@ function itemFromLink(link: string, name: string): ListedConference | null {
   return acronym ? { acronym, fullName: normalize(name) || acronym, cfpLink: new URL(link, EASYCHAIR_ROOT).toString() } : null;
 }
 
-export async function getListedConferences() {
+async function getListedConferences() {
   const rssUrls = (process.env.CONFERENCE_RSS_URL || '').split(',').map(url => url.trim()).filter(Boolean);
   const conferences = new Map<string, ListedConference>();
   if (rssUrls.length) {
@@ -135,7 +135,7 @@ export async function getListedConferences() {
   return [...conferences.values()];
 }
 
-export async function syncConferences() {
+async function syncConferences() {
   const listed = await getListedConferences();
   let detailsUpdated = 0;
     for (const conference of listed) {
