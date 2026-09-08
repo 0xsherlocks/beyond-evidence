@@ -110,7 +110,7 @@ function itemFromLink(link: string, name: string): ListedConference | null {
   return acronym ? { acronym, fullName: normalize(name) || acronym, cfpLink: new URL(link, EASYCHAIR_ROOT).toString() } : null;
 }
 
-export async function getListedConferences() {
+async function getListedConferences() {
   const rssUrls = (process.env.CONFERENCE_RSS_URL || '').split(',').map(url => url.trim()).filter(Boolean);
   const conferences = new Map<string, ListedConference>();
   if (rssUrls.length) {
@@ -135,7 +135,7 @@ export async function getListedConferences() {
   return [...conferences.values()];
 }
 
-export async function syncConferences() {
+async function syncConferences() {
   const listed = await getListedConferences();
   let detailsUpdated = 0;
     for (const conference of listed) {
@@ -162,7 +162,8 @@ export async function syncConferences() {
 
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
-  if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!secret && process.env.NODE_ENV === 'production') return NextResponse.json({ error: 'CRON_SECRET is not configured' }, { status: 500 });
+  if (secret && request.headers.get('authorization') !== `Bearer ${secret}`) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     return NextResponse.json(await syncConferences());
   } catch (error) {

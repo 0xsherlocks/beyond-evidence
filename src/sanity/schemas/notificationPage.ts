@@ -22,7 +22,7 @@ export const notificationPage = defineType({
       name: 'rssFeeds',
       title: 'RSS Feed URLs',
       type: 'array',
-      description: 'Add RSS feed URLs here. They will be automatically fetched and displayed on the notifications page.',
+      description: 'Manage sources for the daily database sync. Changes take effect on the next cron run.',
       of: [
         {
           type: 'object',
@@ -37,8 +37,14 @@ export const notificationPage = defineType({
               name: 'sourceName',
               title: 'Custom Source Name (Optional)',
               type: 'string',
-              description: 'Leave blank to try and auto-detect from the URL or feed title.',
-            }
+              description: 'Shown as the source label. Leave blank to use the feed title.',
+            },
+            {
+              name: 'enabled',
+              title: 'Enable this feed',
+              type: 'boolean',
+              initialValue: true,
+            },
           ]
         }
       ]
