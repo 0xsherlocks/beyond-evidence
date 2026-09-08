@@ -4,10 +4,10 @@ import { PrismaClient } from "../generated/prisma/client";
 const globalForPrisma = globalThis;
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 
-// Fast Refresh can preserve a client generated before a new Prisma model was
-// added. Recreate it when that happens instead of serving an incomplete client.
+// Fast Refresh can preserve a client generated from an older Prisma schema.
+// Recreate it when the generated PrismaClient class changes.
 const cachedPrisma = globalForPrisma.prisma;
-const hasCurrentSchema = cachedPrisma && typeof cachedPrisma.notification !== "undefined";
+const hasCurrentSchema = cachedPrisma instanceof PrismaClient;
 
 export const prisma =
   (hasCurrentSchema && cachedPrisma) ||
