@@ -49,7 +49,7 @@ export async function GET(request) {
       packages[id == $packageId][0]{
         id,
         title,
-        downloadLinks[]{title, url}
+        downloadLinks[]{title, url, "fileUrl": file.asset->url}
       }
     }`,
     { slug, packageId },
@@ -57,7 +57,9 @@ export async function GET(request) {
   );
 
   const selectedPackage = material?.packages;
-  const downloadLinks = selectedPackage?.downloadLinks || [];
+  const downloadLinks = (selectedPackage?.downloadLinks || [])
+    .map((link) => ({ ...link, url: link.url || link.fileUrl }))
+    .filter((link) => Boolean(link.url));
 
   return NextResponse.json({
     hasAccess: true,
@@ -76,4 +78,3 @@ export async function GET(request) {
     }),
   });
 }
-

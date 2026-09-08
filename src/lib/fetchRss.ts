@@ -4,7 +4,7 @@ export interface FeedItem {
   link: string;
   pubDate: string;
   source: string;
-  category: 'Job' | 'Internship' | 'Exam' | 'Scholarship' | 'Workshop' | 'Other';
+  category: 'Job' | 'Internship' | 'Exam' | 'Scholarship' | 'Workshop' | 'Conference' | 'Other';
 }
 
 const RSS2JSON_API_KEY = 'oqoshapsei5mab1kooj89slrpdg1zuval5azcg1k';
@@ -34,7 +34,8 @@ function categorizeItem(title: string): FeedItem['category'] {
   if (t.includes('intern') || t.includes('internship')) return 'Internship';
   if (t.includes('exam') || t.includes('admit card') || t.includes('result') || t.includes('courses')) return 'Exam';
   if (t.includes('scholarship') || t.includes('fellowship')) return 'Scholarship';
-  if (t.includes('workshop') || t.includes('seminar') || t.includes('conference')) return 'Workshop';
+  if (t.includes('conference') || t.includes('call for papers') || t.includes('cfp')) return 'Conference';
+  if (t.includes('workshop') || t.includes('seminar')) return 'Workshop';
   if (t.includes('job') || t.includes('recruitment') || t.includes('vacancy') || t.includes('post') || t.includes('hiring')) return 'Job';
   return 'Other';
 }

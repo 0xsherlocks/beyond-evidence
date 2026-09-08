@@ -2,18 +2,14 @@
 
 import { useAuth, useClerk } from "@clerk/nextjs";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 export default function AuthModalGuard({ children }: { children: React.ReactNode }) {
   const { isLoaded, isSignedIn } = useAuth();
   const { openSignIn } = useClerk();
-  const router = useRouter();
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
-      openSignIn({
-        afterSignInUrl: window.location.pathname,
-      });
+      openSignIn();
     }
   }, [isLoaded, isSignedIn, openSignIn]);
 

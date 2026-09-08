@@ -19,7 +19,6 @@ interface QuizQuestion {
   question: string;
   options: string[];
   correctAnswer: number;
-  correctAnswer: number;
   explanation?: string;
 }
 

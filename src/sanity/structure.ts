@@ -56,6 +56,7 @@ export const structure: StructureResolver = (S) =>
 
       // Document collections
       S.documentTypeListItem('studyMaterial').title('Study Materials / Exams'),
+      S.documentTypeListItem('premiumCourse').title('Premium Courses'),
       S.documentTypeListItem('subject').title('Subjects (Courses)'),
       S.documentTypeListItem('quiz').title('Quizzes'),
       S.documentTypeListItem('notification').title('Official Announcements (Alerts)'),
