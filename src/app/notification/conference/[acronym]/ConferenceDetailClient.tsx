@@ -3,7 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, CalendarDays, ChevronDown, Clock3, ExternalLink, FileText, Mail, MapPin, Send, Tag } from 'lucide-react';
-import { asArray, type CommitteeMember, type ImportantDate, type TopicSection } from '@/src/lib/conferences';
+
+type ImportantDate = { label: string; date: string };
+type TopicSection = { sectionTitle: string; items: string[] };
+type CommitteeMember = { role: string; name: string; affiliation?: string };
+const asArray = <T,>(value: unknown): T[] => Array.isArray(value) ? value as T[] : [];
 
 const formatDate = (value?: string | null) => value ? new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value)) : null;
 const dateRange = (start?: string | null, end?: string | null) => {
