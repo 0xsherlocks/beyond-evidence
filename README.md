@@ -83,6 +83,17 @@ You can manage all the content directly from your local browser. Navigate to:
 http://localhost:3000/studio
 ```
 
+### Scheduled Notification Sync
+
+Vercel Cron is not required. Configure a cron-job.org job after deploying the app:
+
+- URL: `https://<your-domain>/api/cron/sync-notifications`
+- Method: `GET`
+- Header: `Authorization: Bearer <CRON_SECRET>`
+- Schedule: choose the interval you need, such as every 6 hours
+
+The endpoint syncs the enabled RSS feeds from Sanity, imports EasyChair conferences, updates conference details, and marks old notifications. Keep `CRON_SECRET`, `DATABASE_URL`, and the Sanity environment variables configured in Vercel. The separate `/api/cron/sync-conferences` endpoint is available for a conference-only run.
+
 ## Project Structure
 
 - `src/app/`: Next.js App Router pages (`/syllabus`, `/quiz`, `/notification`, etc.).
