@@ -406,6 +406,7 @@ export async function getNotificationPage() {
       rssFeeds[]{
         url,
         sourceName,
+        category,
         enabled
       }
     }`,

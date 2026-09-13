@@ -40,6 +40,26 @@ export const notificationPage = defineType({
               description: 'Shown as the source label. Leave blank to use the feed title.',
             },
             {
+              name: 'category',
+              title: 'Category Override (Optional)',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'Automatic', value: 'automatic' },
+                  { title: 'Jobs', value: 'job' },
+                  { title: 'Internships', value: 'internship' },
+                  { title: 'Exams', value: 'exam' },
+                  { title: 'Scholarships', value: 'scholarship' },
+                  { title: 'Workshops', value: 'workshop' },
+                  { title: 'Conferences', value: 'conference' },
+                  { title: 'Other', value: 'other' },
+                ],
+                layout: 'dropdown',
+              },
+              initialValue: 'automatic',
+              description: 'Use Automatic to classify each item from its title.',
+            },
+            {
               name: 'enabled',
               title: 'Enable this feed',
               type: 'boolean',
