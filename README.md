@@ -92,7 +92,7 @@ Vercel Cron is not required. Configure a cron-job.org job after deploying the ap
 - Header: `Authorization: Bearer <CRON_SECRET>`
 - Schedule: choose the interval you need, such as every 6 hours
 
-The endpoint syncs the enabled RSS feeds from Sanity, imports EasyChair conferences, updates conference details, and marks old notifications. Keep `CRON_SECRET`, `DATABASE_URL`, and the Sanity environment variables configured in Vercel. The separate `/api/cron/sync-conferences` endpoint is available for a conference-only run.
+This endpoint syncs the enabled RSS feeds from Sanity and marks old notifications. Each Sanity feed can define its URL, source label, and an optional category override. Use `Automatic` to classify items from their titles, or choose Jobs, Internships, Exams, Scholarships, Workshops, Conferences, or Other. Create a second cron-job.org job for `https://<your-domain>/api/cron/sync-conferences` if you also want EasyChair conferences refreshed. Keep `CRON_SECRET`, `DATABASE_URL`, and the Sanity environment variables configured in Vercel.
 
 ## Project Structure
 
