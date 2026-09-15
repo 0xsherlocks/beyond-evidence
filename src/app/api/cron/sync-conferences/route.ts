@@ -144,7 +144,14 @@ async function getListedConferences() {
 
 async function syncConferences() {
   const allListed = await getListedConferences();
-  const listed = allListed.slice(0, DETAIL_LIMIT);
+  if (!allListed.length) return { listed: 0, synced: 0, detailsUpdated: 0, limit: DETAIL_LIMIT, offset: 0, nextOffset: 0 };
+  const state = await prisma.easyChairSyncState.upsert({
+    where: { id: 'easychair-conferences' },
+    create: { id: 'easychair-conferences', offset: 0 },
+    update: {},
+  });
+  const offset = state.offset >= allListed.length ? 0 : state.offset;
+  const listed = allListed.slice(offset, offset + DETAIL_LIMIT);
   let detailsUpdated = 0;
   await Promise.all(listed.map(async (conference) => {
       const externalId = `easychair:${conference.acronym.toLowerCase()}`;
@@ -164,7 +171,9 @@ async function syncConferences() {
         detailsUpdated++;
       } catch (error) { console.warn(`Could not update ${conference.acronym}`, error); }
     }));
-  return { listed: allListed.length, synced: listed.length, detailsUpdated, limit: DETAIL_LIMIT };
+  const nextOffset = offset + listed.length >= allListed.length ? 0 : offset + listed.length;
+  await prisma.easyChairSyncState.update({ where: { id: 'easychair-conferences' }, data: { offset: nextOffset } });
+  return { listed: allListed.length, synced: listed.length, detailsUpdated, limit: DETAIL_LIMIT, offset, nextOffset };
 }
 
 export async function GET(request: NextRequest) {
