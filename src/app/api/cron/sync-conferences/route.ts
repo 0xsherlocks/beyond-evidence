@@ -22,11 +22,28 @@ async function fetchWithTimeout(url: string, init?: RequestInit) {
   return fetch(url, { ...init, signal });
 }
 
-function dateFromText(value: string) {
-  const match = value.match(/\b(\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4}|\d{4}[\/.\-]\d{1,2}[\/.\-]\d{1,2}|(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2},?\s+\d{4})\b/i);
+function dateFromText(value: string): Date | null {
+  const match = value.match(/\b(\d{1,2}[\/.\\-]\d{1,2}[\/.\\-]\d{2,4}|\d{4}[\/.\\-]\d{1,2}[\/.\\-]\d{1,2}|(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2},?\s+\d{4}|\d{1,2}\s+(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?),?\s+\d{4})\b/i);
   if (!match) return null;
   const parsed = new Date(match[1]);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+/** Extract a date range like "March 15–17, 2026" or "15–17 March 2026" → [start, end] */
+function dateRangeFromText(text: string): [Date, Date] | [Date, null] | null {
+  // Pattern: "Month D1-D2, YYYY" or "Month D1 - Month D2, YYYY"
+  const rangeMatch = text.match(
+    /\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})\s*[-–—]\s*(?:(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+)?(\d{1,2}),?\s+(\d{4})/i
+  );
+  if (rangeMatch) {
+    const [, startMonth, startDay, endMonth, endDay, year] = rangeMatch;
+    const start = new Date(`${startMonth} ${startDay}, ${year}`);
+    const end = new Date(`${endMonth || startMonth} ${endDay}, ${year}`);
+    if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime())) return [start, end];
+  }
+  // Single date fallback
+  const single = dateFromText(text);
+  return single ? [single, null] : null;
 }
 
 function textUntilNextHeading($: cheerio.CheerioAPI, heading: cheerio.Cheerio<any>) {
@@ -53,15 +70,55 @@ function parseDetail(html: string) {
   const committees = findSection(/committees?/i);
   const contact = findSection(/contact/i);
 
+  // ── Important Dates ────────────────────────────────────────────────────────
   const importantDates: ImportantDate[] = [];
   if (important) {
-    important.heading.nextUntil('h1,h2,h3,h4').find('li,tr,p').each((_, el) => {
-      const raw = normalize($(el).text());
-      const date = dateFromText(raw);
-      if (date) importantDates.push({ label: normalize(raw.replace(/[:\-–—]?\s*(?:\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4}|\d{4}[\/.\-]\d{1,2}[\/.\-]\d{1,2}|(?:Jan\w*|Feb\w*|Mar\w*|Apr\w*|May|Jun\w*|Jul\w*|Aug\w*|Sep\w*|Oct\w*|Nov\w*|Dec\w*)\s+\d{1,2},?\s+\d{4})/i, '')), date: date.toISOString().slice(0, 10) });
+    // Handle both <table> rows and <li>/<p> elements
+    const container = important.heading.nextUntil('h1,h2,h3,h4');
+    container.find('tr').each((_, el) => {
+      const cells = $(el).find('td,th').toArray();
+      if (cells.length >= 2) {
+        const label = normalize($(cells[0]).text());
+        const rawDate = normalize($(cells[cells.length - 1]).text());
+        const date = dateFromText(rawDate);
+        if (label && date) importantDates.push({ label, date: date.toISOString().slice(0, 10) });
+      }
     });
+    // If table parsing found nothing, fall back to li/p
+    if (!importantDates.length) {
+      container.find('li,p').each((_, el) => {
+        const raw = normalize($(el).text());
+        const date = dateFromText(raw);
+        if (date) {
+          const label = normalize(raw.replace(/[:\-–—]?\s*(?:\d{1,2}[\/.\\-]\d{1,2}[\/.\\-]\d{2,4}|\d{4}[\/.\\-]\d{1,2}[\/.\\-]\d{1,2}|(?:Jan\w*|Feb\w*|Mar\w*|Apr\w*|May|Jun\w*|Jul\w*|Aug\w*|Sep\w*|Oct\w*|Nov\w*|Dec\w*)\s+\d{1,2},?\s+\d{4}|\d{1,2}\s+(?:Jan\w*|Feb\w*|Mar\w*|Apr\w*|May|Jun\w*|Jul\w*|Aug\w*|Sep\w*|Oct\w*|Nov\w*|Dec\w*),?\s+\d{4})/i, ''));
+          importantDates.push({ label, date: date.toISOString().slice(0, 10) });
+        }
+      });
+    }
   }
 
+  // ── Derive typed date fields from importantDates ───────────────────────────
+  const findDate = (...patterns: RegExp[]): Date | null => {
+    const entry = importantDates.find(d => patterns.some(p => p.test(d.label)));
+    return entry ? new Date(entry.date) : null;
+  };
+  const submissionDeadline = findDate(
+    /(?:paper|manuscript|full.?paper|regular.?paper)\s*(?:submission|deadline)/i,
+    /submission\s*deadline/i,
+    /(?:abstract|paper)\s*due/i,
+  );
+  const notificationDate = findDate(
+    /notification\s*(?:of\s*acceptance|of\s*decision|to\s*authors)?/i,
+    /author\s*notification/i,
+    /acceptance\s*notification/i,
+  );
+  const cameraReadyDate = findDate(
+    /camera[- ]?ready/i,
+    /final\s*(?:version|manuscript|paper)/i,
+    /final\s*submission/i,
+  );
+
+  // ── Topics ────────────────────────────────────────────────────────────────
   const topicSections: TopicSection[] = [];
   if (topics) {
     let currentTitle = 'Topics';
@@ -75,6 +132,7 @@ function parseDetail(html: string) {
     flush();
   }
 
+  // ── Committees ────────────────────────────────────────────────────────────
   const committeeMembers: CommitteeMember[] = [];
   if (committees) {
     let role = 'Committee';
@@ -90,6 +148,57 @@ function parseDetail(html: string) {
     });
   }
 
+  // ── Location extraction ────────────────────────────────────────────────────
+  // Try EasyChair-specific selectors, then generic heuristics
+  let location: string | null = null;
+  const locationCandidates: string[] = [];
+
+  // 1. Table cells labeled "Location" or "Venue" or "Place"
+  $('td, th').each((_, el) => {
+    const text = normalize($(el).text());
+    if (/^(location|venue|place|city|held\s+at)$/i.test(text)) {
+      const next = $(el).next('td,th');
+      if (next.length) locationCandidates.push(normalize(next.text()));
+    }
+  });
+
+  // 2. Elements with class/id containing "location" or "venue"
+  $('[class*="location"],[id*="location"],[class*="venue"],[id*="venue"]').each((_, el) => {
+    const text = normalize($(el).text());
+    if (text && text.length < 120) locationCandidates.push(text);
+  });
+
+  // 3. Paragraph near the top that looks like "City, Country" or "City, State, Country"
+  $('p, div').slice(0, 30).each((_, el) => {
+    const text = normalize($(el).text());
+    // Must have a comma, not too long, not a sentence
+    if (/^[A-Z][a-z]+(?:\s[A-Z][a-z]+)*,\s*[A-Za-z]+/.test(text) && text.length < 80 && !/\.\s/.test(text)) {
+      locationCandidates.push(text);
+    }
+  });
+
+  location = locationCandidates.find(c => c.length > 3) ?? null;
+
+  // ── Conference start/end dates ─────────────────────────────────────────────
+  let startDate: Date | null = null;
+  let endDate: Date | null = null;
+
+  // Look for date range in importantDates first
+  const confDateEntry = importantDates.find(d =>
+    /conference|event|workshop|symposium|dates?/i.test(d.label) && !/submission|notification|camera/i.test(d.label)
+  );
+  if (confDateEntry) {
+    startDate = new Date(confDateEntry.date);
+  }
+
+  // Try to find date range in the page text (header area, venue section)
+  if (!startDate) {
+    const headerText = normalize($('h1,h2,.cfp-header,header,[class*="header"],[class*="title"]').first().parent().text().slice(0, 500));
+    const range = dateRangeFromText(headerText);
+    if (range) { startDate = range[0]; endDate = range[1]; }
+  }
+
+  // ── Links ─────────────────────────────────────────────────────────────────
   const links = $('a').toArray();
   const linkWithText = (expression: RegExp) => links.find(link => expression.test(normalize($(link).text())));
   const website = linkWithText(/conference (web ?page|website|site)|official (web ?site|website)/i);
@@ -107,6 +216,13 @@ function parseDetail(html: string) {
     contactEmail: email || null,
     conferenceWebPage: website ? new URL($(website).attr('href') || '', EASYCHAIR_ROOT).toString() : null,
     submissionLink: submission ? new URL($(submission).attr('href') || '', EASYCHAIR_ROOT).toString() : null,
+    // Typed fields derived from parsed content
+    location,
+    startDate,
+    endDate,
+    submissionDeadline,
+    notificationDate,
+    cameraReadyDate,
   };
 }
 
@@ -153,24 +269,50 @@ async function syncConferences() {
   const offset = state.offset >= allListed.length ? 0 : state.offset;
   const listed = allListed.slice(offset, offset + DETAIL_LIMIT);
   let detailsUpdated = 0;
+
   await Promise.all(listed.map(async (conference) => {
-      const externalId = `easychair:${conference.acronym.toLowerCase()}`;
-      await prisma.notification.upsert({
-        where: { externalId },
-        create: { externalId, type: 'conference', title: conference.fullName, fullName: conference.fullName, acronym: conference.acronym, cfpLink: conference.cfpLink, link: conference.cfpLink, source: 'easychair', topics: [] },
-        update: { title: conference.fullName, fullName: conference.fullName, cfpLink: conference.cfpLink, link: conference.cfpLink },
+    const externalId = `easychair:${conference.acronym.toLowerCase()}`;
+    await prisma.notification.upsert({
+      where: { externalId },
+      create: { externalId, type: 'conference', title: conference.fullName, fullName: conference.fullName, acronym: conference.acronym, cfpLink: conference.cfpLink, link: conference.cfpLink, source: 'easychair', topics: [] },
+      update: { title: conference.fullName, fullName: conference.fullName, cfpLink: conference.cfpLink, link: conference.cfpLink },
+    });
+    try {
+      const response = await fetchWithTimeout(conference.cfpLink, {
+        cache: 'no-store',
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; BeyondEvidenceBot/1.0; +https://beyondevidence.in)' },
       });
-      try {
-        const response = await fetchWithTimeout(conference.cfpLink, { cache: 'no-store', headers: { 'User-Agent': 'BeyondEvidence conference sync/1.0' } });
-        if (!response.ok) throw new Error(`Detail request failed (${response.status})`);
-        const detail = parseDetail(await response.text());
-        await prisma.notification.update({
-          where: { externalId },
-          data: { ...detail, topics: detail.topicSections.flatMap(topic => topic.items), lastDetailFetch: new Date() },
-        });
-        detailsUpdated++;
-      } catch (error) { console.warn(`Could not update ${conference.acronym}`, error); }
-    }));
+      if (!response.ok) throw new Error(`Detail request failed (${response.status})`);
+      const detail = parseDetail(await response.text());
+
+      await prisma.notification.update({
+        where: { externalId },
+        data: {
+          description: detail.description,
+          submissionGuidelines: detail.submissionGuidelines,
+          importantDates: detail.importantDates,
+          topicSections: detail.topicSections,
+          committees: detail.committees,
+          publication: detail.publication,
+          venue: detail.venue,
+          contactEmail: detail.contactEmail,
+          conferenceWebPage: detail.conferenceWebPage,
+          submissionLink: detail.submissionLink,
+          topics: detail.topicSections.flatMap(t => t.items),
+          // ── Typed fields now correctly populated ──────────────────────────
+          location: detail.location ?? undefined,
+          startDate: detail.startDate ?? undefined,
+          endDate: detail.endDate ?? undefined,
+          submissionDeadline: detail.submissionDeadline ?? undefined,
+          notificationDate: detail.notificationDate ?? undefined,
+          cameraReadyDate: detail.cameraReadyDate ?? undefined,
+          lastDetailFetch: new Date(),
+        },
+      });
+      detailsUpdated++;
+    } catch (error) { console.warn(`Could not update ${conference.acronym}`, error); }
+  }));
+
   const nextOffset = offset + listed.length >= allListed.length ? 0 : offset + listed.length;
   await prisma.easyChairSyncState.update({ where: { id: 'easychair-conferences' }, data: { offset: nextOffset } });
   return { listed: allListed.length, synced: listed.length, detailsUpdated, limit: DETAIL_LIMIT, offset, nextOffset };
