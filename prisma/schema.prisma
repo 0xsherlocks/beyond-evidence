@@ -85,3 +85,9 @@ model Notification {
   @@index([acronym])
   @@index([submissionDeadline])
 }
+
+model EasyChairSyncState {
+  id        String   @id
+  offset    Int      @default(0)
+  updatedAt DateTime @default(now()) @updatedAt
+}

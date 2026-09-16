@@ -5,6 +5,7 @@ import { prisma } from '@/src/lib/prisma';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 type ListedConference = { acronym: string; fullName: string; cfpLink: string };
 type ImportantDate = { label: string; date: string };
@@ -12,8 +13,14 @@ type TopicSection = { sectionTitle: string; items: string[] };
 type CommitteeMember = { role: string; name: string; affiliation?: string };
 
 const EASYCHAIR_ROOT = 'https://easychair.org';
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const DETAIL_LIMIT = Math.max(1, Number(process.env.EASYCHAIR_SYNC_DETAILS_LIMIT || 25));
+const REQUEST_TIMEOUT = 8000;
 const normalize = (value: string) => value.replace(/\s+/g, ' ').trim();
+
+async function fetchWithTimeout(url: string, init?: RequestInit) {
+  const signal = AbortSignal.timeout(REQUEST_TIMEOUT);
+  return fetch(url, { ...init, signal });
+}
 
 function dateFromText(value: string) {
   const match = value.match(/\b(\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4}|\d{4}[\/.\-]\d{1,2}[\/.\-]\d{1,2}|(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2},?\s+\d{4})\b/i);
@@ -124,7 +131,7 @@ async function getListedConferences() {
     }
   } else {
     const sourceUrl = process.env.EASYCHAIR_CFP_SOURCE_URL || `${EASYCHAIR_ROOT}/cfp/`;
-    const response = await fetch(sourceUrl, { cache: 'no-store', headers: { 'User-Agent': 'BeyondEvidence conference sync/1.0' } });
+    const response = await fetchWithTimeout(sourceUrl, { cache: 'no-store', headers: { 'User-Agent': 'BeyondEvidence conference sync/1.0' } });
     if (!response.ok) throw new Error(`EasyChair list request failed (${response.status})`);
     const $ = cheerio.load(await response.text());
     $('a[href*="/cfp/"]').each((_, link) => {
@@ -136,9 +143,17 @@ async function getListedConferences() {
 }
 
 async function syncConferences() {
-  const listed = await getListedConferences();
+  const allListed = await getListedConferences();
+  if (!allListed.length) return { listed: 0, synced: 0, detailsUpdated: 0, limit: DETAIL_LIMIT, offset: 0, nextOffset: 0 };
+  const state = await prisma.easyChairSyncState.upsert({
+    where: { id: 'easychair-conferences' },
+    create: { id: 'easychair-conferences', offset: 0 },
+    update: {},
+  });
+  const offset = state.offset >= allListed.length ? 0 : state.offset;
+  const listed = allListed.slice(offset, offset + DETAIL_LIMIT);
   let detailsUpdated = 0;
-    for (const conference of listed) {
+  await Promise.all(listed.map(async (conference) => {
       const externalId = `easychair:${conference.acronym.toLowerCase()}`;
       await prisma.notification.upsert({
         where: { externalId },
@@ -146,7 +161,7 @@ async function syncConferences() {
         update: { title: conference.fullName, fullName: conference.fullName, cfpLink: conference.cfpLink, link: conference.cfpLink },
       });
       try {
-        const response = await fetch(conference.cfpLink, { cache: 'no-store', headers: { 'User-Agent': 'BeyondEvidence conference sync/1.0' } });
+        const response = await fetchWithTimeout(conference.cfpLink, { cache: 'no-store', headers: { 'User-Agent': 'BeyondEvidence conference sync/1.0' } });
         if (!response.ok) throw new Error(`Detail request failed (${response.status})`);
         const detail = parseDetail(await response.text());
         await prisma.notification.update({
@@ -155,9 +170,10 @@ async function syncConferences() {
         });
         detailsUpdated++;
       } catch (error) { console.warn(`Could not update ${conference.acronym}`, error); }
-      await sleep(500);
-    }
-  return { synced: listed.length, detailsUpdated };
+    }));
+  const nextOffset = offset + listed.length >= allListed.length ? 0 : offset + listed.length;
+  await prisma.easyChairSyncState.update({ where: { id: 'easychair-conferences' }, data: { offset: nextOffset } });
+  return { listed: allListed.length, synced: listed.length, detailsUpdated, limit: DETAIL_LIMIT, offset, nextOffset };
 }
 
 export async function GET(request: NextRequest) {
